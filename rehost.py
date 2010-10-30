@@ -32,6 +32,10 @@ MAX_SIZE = 50 * 2 ** 20
 TIMEOUT = 60
 CACHE_FILE = os.path.join(os.path.dirname(__file__), 'linkcache.txt')
 
+IMAGE_TYPES = (
+'image/jpeg', 'image/tiff', 'image/gif', 'image/x-ms-bmp', 'image/png',
+)
+
 ERR = '[!]'
 FLAGS = '(?si)'
 
@@ -71,8 +75,12 @@ install_opener(uaopener())
 def cache_search(address):
     """Find out if object at this address is already rehosted."""
     for cs in open(CACHE_FILE, 'a+').readlines():
-        sl, fl = cs.strip().split()
-        if sl == address: return fl
+        try:
+            sl, fl = cs.strip().split()[:2]
+            if sl == address: return fl
+        except ValueError:
+            # less than 2 urls on line - ignoring
+            pass
     
     
 def cache_write(src, dl):
@@ -100,7 +108,7 @@ def open_thing(address):
             print(ERR, 'Bad URL: \'{0}\''.format(address))
             return (None, None)
         t = f.info().type
-        s = re.search(r'\.[^/]+$', pa.path)
+        s = re.search(r'\.[^/]+?$', pa.path)
         if s is None: s = ''
         else: s = s.group()
         tmp = TemporaryFile(prefix='_', suffix=s)
@@ -169,8 +177,8 @@ def rehost(url, cache=True, image=False):
     fd, ftype = open_thing(s)
     if fd is None:
         return s  # failed to open
-    if image and ftype.find('image') != 0:
-        print('Not an image, ignored:', s)
+    if image and ftype not in IMAGE_TYPES:
+        # print('Not an image (ignored):', s)
         return s
     
     pf = MultipartParam('file', filetype=ftype, fileobj=fd, filename=fd.name)
