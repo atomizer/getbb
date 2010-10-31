@@ -225,6 +225,7 @@ def proctag(m):
 def process(s):
     global urls
     urls = {}
+    print('Processing tags...')
     # Reduce the page.
     for p in PSTO_PATTERNS:
         m = re.search(FLAGS + p, s)
@@ -249,6 +250,7 @@ def process(s):
         if a != b:
             print('{0} >> {1}'.format(a, b))
     
+    print('Processing URLs...')
     # Rehost images.
     if gevent:
         pool = Pool(POOL_SIZE)
@@ -274,7 +276,7 @@ def process(s):
             imgs += 1
         s = s.replace(p, urls[p])
     
-    print('\nReplaced {0} tags, {1} images.'.format(m, imgs))
+    print('Done: replaced {0} tags, {1} images.'.format(m, imgs))
     return decode_html_entities(s).strip()
 
 
@@ -290,6 +292,7 @@ if __name__ == '__main__':
     site_root = urlunparse([tp.scheme, tp.netloc, '', '', '', '',])
     target_root = site_root + re.sub('[^/]*$', '', tp.path)
     
+    print('Opening target...')
     fd, ftype, finfo = open_thing(target)
     if fd is None:
         sys.exit("\nNo access to '{0}', terminated.".format(target))
