@@ -30,7 +30,7 @@ try:
 except ImportError:
     gevent = None
     
-from rehost import rehost, print_urlerror, uaopener
+from rehost import *
 
 FLAGS = '(?si)'
 # self-closed tags
@@ -109,11 +109,6 @@ target_root = ''
 output_file = 'out.txt'
 urls = {}
 
-def fail(s):
-    print('[!]', s)
-    # sys.stdin.readline()
-    sys.exit()
-    
     
 def decode_html_entities(string):
     # http://snippets.dzone.com/posts/show/4569
@@ -293,29 +288,28 @@ if __name__ == '__main__':
     target = sys.argv[1]
     tp = urlparse(target)
     site_root = urlunparse([tp.scheme, tp.netloc, '', '', '', '',])
-    target_root = site_root + re.sub('[^/]$', '', tp.path)
-    target_charset = 'cp1251'
-    try:
-        inpf = uaopener().open(target)
-        c = inpf.info().getparam('charset')
-        if c: target_charset = c
-    except (IOError, ValueError):
-        try:
-            inpf = open(target)
-        except IOError as ex:
-            fail('I/O error at \'{0}\': {1}'.format(target, ex))
-        site_root = ''
-        target_root = ''
+    target_root = site_root + re.sub('[^/]*$', '', tp.path)
     
-    istr = unicode(inpf.read(), target_charset)
+    fd, ftype, finfo = open_thing(target)
+    if fd is None:
+        sys.exit("\nNo access to '{0}', terminated.".format(target))
+    if ftype is None or ftype.find('text') != 0:
+        sys.exit("\nError: got type '{0}', expected 'text/*'.".format(ftype))
+    target_charset = 'cp1251'
+    if finfo is not None:
+        c = finfo.getparam('charset')
+        if c is not None:
+            target_charset = c
+    
+    istr = unicode(fd.read(), target_charset)
     try:
         istr = process(istr)
     except KeyboardInterrupt as ex:
-        fail(str(ex))
+        sys.exit('\nUnexpected manual termination')
         
     f = open(output_file, 'w')
     f.write(istr.encode('utf-8'))
     
-    print('Output written to \'{0}\''.format(output_file))
+    print("Output written to '{0}'".format(output_file))
     if os.name == 'nt': os.startfile(output_file, 'open')
     

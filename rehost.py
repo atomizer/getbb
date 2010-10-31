@@ -23,7 +23,7 @@ from tempfile import TemporaryFile
 from encode import multipart_encode, MultipartParam, gen_boundary
 from streaminghttp import streaming_opener
 
-__all__ = ['rehost', 'uaopener', 'print_urlerror']
+__all__ = ['rehost', 'open_thing', 'print_urlerror']
 
 USER_AGENT = 'Mozilla/5.0 Firefox/3.6.12'
 UPLOAD_URL = 'http://file.kirovnet.ru/upload'
@@ -31,10 +31,6 @@ DOWNLOAD_URL = r'http://file.kirovnet.ru/d/\d+'
 MAX_SIZE = 50 * 2 ** 20
 TIMEOUT = 60
 CACHE_FILE = os.path.join(os.path.dirname(__file__), 'linkcache.txt')
-
-IMAGE_TYPES = (
-'image/jpeg', 'image/tiff', 'image/gif', 'image/x-ms-bmp', 'image/png',
-)
 
 ERR = '[!]'
 FLAGS = '(?si)'
@@ -54,6 +50,10 @@ RW_EXT = (
     ('imageshack.us/i/', 'rel="image_src" href="([^"]+)'), #???
 )
 
+IMAGE_TYPES = (
+'image/jpeg', 'image/tiff', 'image/gif', 'image/x-ms-bmp', 'image/png',
+)
+
 def print_urlerror(url, ex):
     msg = str(getattr(ex, 'code', ''))
     if msg: msg = 'HTTP ' + msg
@@ -71,6 +71,7 @@ def uaopener(handler=urllib2.BaseHandler, uagent=USER_AGENT):
     
 # Every urlopen() will use our special opener instead of default one.
 install_opener(uaopener())
+
 
 def cache_search(address):
     """Find out if object at this address is already rehosted."""
@@ -92,22 +93,24 @@ def cache_write(src, dl):
 def open_thing(address):
     """Try to open an URL or local file.
     
-    Return a tuple (file, type), where:
+    Return a tuple (file, type, info), where:
     -- file: file object or None if an error occured
     -- type: guessed MIME type
+    -- info: httplib.HTTPMessage object (if present)
     """    
-    f, t = None, None
+    f, t, i = None, None, None
     pa = urlparse(address)
     if pa.scheme in ['http', 'https', 'ftp', 'file']:
         try:
             f = urlopen(address, timeout=TIMEOUT)
         except URLError as ex:
             print_urlerror(address, ex)
-            return (None, None)
+            return (None, None, None)
         except ValueError:
             print(ERR, 'Bad URL: \'{0}\''.format(address))
-            return (None, None)
-        t = f.info().type
+            return (None, None, None)
+        i = f.info()
+        t = i.gettype()
         s = re.search(r'\.[^/]+?$', pa.path)
         if s is None: s = ''
         else: s = s.group()
@@ -119,17 +122,17 @@ def open_thing(address):
         # Unknown protocol, suppose it's local file path.
         fp = os.path.normpath(address)
         if os.path.isfile(fp):
-            t = guess_type(fp)
+            t = guess_type(fp)[0]
             try:
                 f = open(fp, 'rb')
             except IOError as ex:
                 print(ERR, 'I/O error.', ex)
+                return (None, None, None)
         else:
-            print(ERR, 'Unrecognized object: \'{0}\''.format(fp))
-    
+            print(ERR, "Not a file: '{0}'".format(fp))
     if t is None or t == '':
         t = 'application/octet-stream'
-    return (f, t)
+    return (f, t, i)
     
 
 def recover_image(url):
@@ -174,7 +177,7 @@ def rehost(url, cache=True, image=False):
     else:
         s = url
     
-    fd, ftype = open_thing(s)
+    fd, ftype, _ = open_thing(s)
     if fd is None:
         return s  # failed to open
     if image and ftype not in IMAGE_TYPES:
