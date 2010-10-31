@@ -177,7 +177,7 @@ def rehost(url, cache=True, image=False):
     else:
         s = url
     
-    fd, ftype, _ = open_thing(s)
+    fd, ftype, finfo = open_thing(s)
     if fd is None:
         return s  # failed to open
     if image and ftype not in IMAGE_TYPES:
@@ -203,7 +203,7 @@ def rehost(url, cache=True, image=False):
         print(ERR, 'Uploaded, but failed to get URL - layout changed?')
         return s    # falling back
     
-    if cache:
+    if cache and finfo is not None:
         cache_write(url, g)
     return g
     
