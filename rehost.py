@@ -53,6 +53,7 @@ RW_EXT = (
 IMAGE_TYPES = (
 'image/jpeg', 'image/tiff', 'image/gif', 'image/x-ms-bmp', 'image/png',
 )
+IMAGE_EXT = ('.jpg', '.tiff', '.gif', '.bmp', '.png' )
 
 def print_urlerror(url, ex):
     msg = str(getattr(ex, 'code', ''))
@@ -178,13 +179,16 @@ def rehost(url, cache=True, image=False):
         s = url
     
     fd, ftype, finfo = open_thing(s)
+    fname = fd.name
     if fd is None:
         return s  # failed to open
-    if image and ftype not in IMAGE_TYPES:
-        # print('Not an image (ignored):', s)
-        return s
+    if image:
+        if ftype not in IMAGE_TYPES:
+            return s  # not an image
+        elif not guess_type(fname)[0] == ftype:
+            fname += IMAGE_EXT[IMAGE_TYPES.index(ftype)]
     
-    pf = MultipartParam('file', filetype=ftype, fileobj=fd, filename=fd.name)
+    pf = MultipartParam('file', filetype=ftype, fileobj=fd, filename=fname)
     if pf.get_size(gen_boundary()) > MAX_SIZE:
         print(ERR, 'Too big object: \'{0}\''.format(s))
         return s
