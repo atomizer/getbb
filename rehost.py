@@ -102,22 +102,22 @@ def open_thing(address):
     pa = urlparse(address)
     if pa.scheme in ['http', 'https', 'ftp', 'file']:
         try:
-            f = urlopen(address, timeout=TIMEOUT)
+            tmp = urlopen(address, timeout=TIMEOUT)
         except URLError as ex:
             print_urlerror(address, ex)
             return (None, None, None)
         except ValueError:
             print(ERR, 'Bad URL: \'{0}\''.format(address))
             return (None, None, None)
-        i = f.info()
+        i = tmp.info()
         t = i.gettype()
         s = re.search(r'\.[^/]+?$', pa.path)
         if s is None: s = ''
         else: s = s.group()
-        tmp = TemporaryFile(prefix='_', suffix=s)
-        tmp.write(f.read())
-        tmp.flush()
-        f = tmp
+        f = TemporaryFile(prefix='_', suffix=s)
+        f.write(tmp.read())
+        f.flush()
+        f.seek(0)
     else:
         # Unknown protocol, suppose it's local file path.
         fp = os.path.normpath(address)

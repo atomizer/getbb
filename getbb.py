@@ -41,9 +41,9 @@ ptag_re = re.compile(FLAGS +
     '<(?P<tag>[^/ >]+)(?P<attr>[^>]*)>(?P<content>[^<]*)</[^>]+>')
 
 PSTO_PATTERNS = (
-    '<div class="post_body"[^>]*>(.*?)</div><!--/post_body',  # rutracker-alike
+    'class="post_body"[^>]*>(.*?)</div><!--/post_body',  # rutracker-alike
     'class="heading_b"[^>]*>(.*?)</table>',  # hdclub
-    '<div id="news-id-[^>]*>(.*?)</td>',  # epidemz
+    'id="news-id-[^>]*>(.*?)</td>',  # epidemz
 )
 SIMPLE_RULES = (
     ('\n',''), ('\r',''), ('<wbr>',''), ('<!--.*?-->',''),
@@ -102,7 +102,7 @@ BBTAGS_NO_NEST = (
     '[b]', '[i]', '[u]', '[color=_]', '[align=_]', '[size=_]',
 )
 
-POOL_SIZE = 5
+POOL_SIZE = 10
 
 site_root = ''
 target_root = ''
@@ -205,7 +205,6 @@ def proctag(m):
         if optag == '{#SP#}':
             hs = re.search('{#SHS#}(.*?){#SHE#}', dc)
             if hs:
-                print(repr(hs.group(1)))
                 optag = u'[spoiler="{0}"]'.format(
                     re.sub(r'\[[^\]]+\]', '', hs.group(1)))
                 dc = dc.replace(hs.group(0),'')
