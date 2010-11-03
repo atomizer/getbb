@@ -42,25 +42,28 @@ ptag_re = re.compile(FLAGS +
 
 PSTO_PATTERNS = (
     'class="post_body"[^>]*>(.*?)</div><!--/post_body',  # rutracker-alike
-    'class="heading_b"[^>]*>(.*?)</table>',  # hdclub
+    'class="heading_b"[^>]*>(.*?)<a name="startcomments"',  # hdclub
     'id="news-id-[^>]*>(.*?)</td>',  # epidemz
 )
 SIMPLE_RULES = (
-    ('\n',''), ('\r',''), ('<wbr>',''), ('<!--.*?-->',''),
+    ('\n', ''), ('\r', ''), ('<wbr>', ''), ('<!--.*?-->', ''),
     # line breaks, horisontal rulers
-    ('<span class="post-br">.*?</span>','\n\n'),
-    ('<span class="post-hr">.*?</span>','[hr]'),
-    ('<hr[^>]*>','[hr]'),
-    ('<br[^>]*>','\n'),
-    ('<div></div>','\n'),
+    ('<span class="post-br">.*?</span>', '\n\n'),
+    ('<span class="post-hr">.*?</span>', '[hr]'),
+    ('<hr[^>]*>', '[hr]'),
+    ('<br[^>]*>', '\n'),
+    ('<div></div>', '\n'),
     # lists
-    ('<[ou]l>','[list]'), ('</[ou]l>','[/list]'),
-    ('<[ou]l type="([^"])">','[list=\\1]'),
-    ('<li>','[*]'),  ('</li>',''),
-    # ?
-    ('<b>','[b]'), ('</b>','[/b]'),
-    ('<i>','[i]'), ('</i>','[/i]'),
-    ('<u>','[u]'), ('</u>','[/u]'),
+    ('<[ou]l>', '[list]'), ('</[ou]l>', '[/list]'),
+    ('<[ou]l type="([^"])">', '[list=\\1]'),
+    ('<li>', '[*]'),  ('</li>', ''),
+    # hdclub & epidemz dumb tags
+    ('<b>', '[b]'), ('</b>', '[/b]'),
+    ('<i>', '[i]'), ('</i>', '[/i]'),
+    ('<u>', '[u]'), ('</u>', '[/u]'),
+    # hdclub's textarea
+    ('<textarea>', '[font="monospace"]'),
+    ('</textarea>', '[/font]'),
 )
 COMPLEX_RULES = {
     'post-b': ('[b]','[/b]'),
@@ -90,11 +93,11 @@ COMPLEX_RULES = {
     'float: ?(left|right)': ('{#FLOAT#}',''),
 }
 
-BANNED_TAGS = ('fieldset', 'table', 'style', 'form',)
+BANNED_TAGS = ('fieldset', 'style', 'form',)
 SKIP_TAGS = ('object', 'param', 'embed', 'script', 'p',)
 SKIP_TAGS_ATTR = (
     'display: none', '"heading"', 'colhead',
-    'sp-fold', 'q-head', 'c-head', 'sp-title',
+    'sp-fold', 'q-head', 'c-head', 'sp-title', 'quote-title',
 )
 TAGS_WITH_URLS = ('a', 'var', 'img',)
 # no nesting allowed ([b][b]test[/b][/b] -> [b]test[/b])
@@ -230,6 +233,7 @@ def process(s):
         m = re.search(FLAGS + p, s)
         if m:
             s = m.group(1)
+            break
     # Cut out bad tags.
     for t in BANNED_TAGS:
         s = s.split('<' + t)[0]
