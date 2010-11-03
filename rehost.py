@@ -37,9 +37,17 @@ FLAGS = '(?si)'
 
 RW = (
     (r'radikal.ru/\w/(.+)\.html?$', r'\1'),
-    (r'fastpic.ru/view/([^/]+)/([^/]+)/([^/]+)/([^\.]+?)(\w\w).([^\.]+).html?$',
+    # http://fastpic.ru/view/7/2010/0616/5439056de5527a6dc085ff9ffd186715.jpg.html
+    # http://i7.fastpic.ru/big/2010/0616/15/5439056de5527a6dc085ff9ffd186715.jpg
+    (   r'fastpic.ru/view/(\d+)/(\d+)/(\d+)/([^\.]+?)(\w\w).([^\.]+).html?$',
         r'i\1.fastpic.ru/big/\2/\3/\5/\4\5.\6'),
+    # http://www.bitbest.ru/view.php?img=2010_10_20_1254978563.jpg
+    # http://www.bitbest.ru/files/2010_10_20_1254978563.jpg
     (r'bitbest.ru/view.php\?.*?img=([^&]+).*', r'bitbest.ru/files/\1'),
+    # http://img.phyrefile.com/hdlover/2009/12/09/7_002.png
+    # http://pic.phyrefile.com/h/hd/hdlover/2009/12/09/7_002.png
+    (   r'img.phyrefile.com/((\w)(\w)\w*)/(.*)',
+        r'pic.phyrefile.com/\2/\2\3/\1/\4'),
 )
 RW_EXT = (
     ('phyrefile.com/image/view', 'id="main_content".*?href="([^"]+)'),
