@@ -1,5 +1,3 @@
-.. contents:: Содержание
-
 getbb
 =====
 Этот скрипт позволяет извлечь исходный код оформления со страницы
@@ -36,9 +34,8 @@ getbb
 3. После завершения процесса откроется блокнот с текстом оформления.
 
 Если что-то пошло не так, используйте консоль.
-Если всё совсем плохо, `свяжитесь со мной`__.
+Если всё совсем плохо, свяжитесь со мной.
 
-__ contactme_
 .. _Python: http://python.org/download/
 
 Интерфейс командной строки
@@ -99,8 +96,6 @@ fileN
 .. _PEP8: http://www.python.org/dev/peps/pep-0008/
 .. _argparse: http://docs.python.org/dev/library/argparse.html
 .. _optparse: http://docs.python.org/dev/library/optparse.html
-
-.. _contactme:
 
 Контакты
 ========
