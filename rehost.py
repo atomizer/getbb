@@ -15,7 +15,6 @@ import os
 import re
 import urllib2
 from urllib2 import build_opener, install_opener, urlopen, URLError
-from mimetypes import guess_type
 from urlparse import urlparse
 from tempfile import TemporaryFile
 
@@ -120,7 +119,7 @@ def open_thing(address):
             return (None, None, None)
         i = tmp.info()
         t = i.gettype()
-        s = re.search(r'\.[^/]+?$', pa.path)
+        s = re.search(r'\.\w+$', pa.path)
         if s is None: s = ''
         else: s = s.group()
         f = TemporaryFile(prefix='_', suffix=s)
@@ -187,13 +186,13 @@ def rehost(url, cache=True, image=False):
         s = url
     
     fd, ftype, finfo = open_thing(s)
-    fname = fd.name
     if fd is None:
         return s  # failed to open
+    fname = fd.name
     if image:
         if ftype not in IMAGE_TYPES:
             return s  # not an image
-        elif not guess_type(fname)[0] == ftype:
+        if re.search(r'\.\w+$', fname) is None:
             fname += IMAGE_EXT[IMAGE_TYPES.index(ftype)]
     
     pf = MultipartParam('file', filetype=ftype, fileobj=fd, filename=fname)
