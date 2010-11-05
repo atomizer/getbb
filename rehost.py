@@ -225,7 +225,9 @@ if __name__ == '__main__':
     if sys.argv[1:]:
         for arg in sys.argv[1:]:
             t = rehost(arg)
-            if arg != t: print(t)  # something better would be cool.
-        sys.stdin.readline()
+            if arg != t:
+                print(t)  # something better would be cool.
+        if os.name == 'nt':
+            sys.stdin.readline()
     else:
         print(__doc__)
