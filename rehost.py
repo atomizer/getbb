@@ -130,7 +130,6 @@ def open_thing(address):
         # Unknown protocol, suppose it's local file path.
         fp = os.path.normpath(address)
         if os.path.isfile(fp):
-            t = guess_type(fp)[0]
             try:
                 f = open(fp, 'rb')
             except IOError as ex:
