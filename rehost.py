@@ -16,7 +16,7 @@ import re
 import urllib2
 from urllib2 import build_opener, install_opener, urlopen, URLError
 from urlparse import urlparse
-from tempfile import TemporaryFile
+from tempfile import NamedTemporaryFile
 
 # from http://atlee.ca/software/poster/
 from encode import multipart_encode, MultipartParam, gen_boundary
@@ -122,7 +122,7 @@ def open_thing(address):
         s = re.search(r'\.\w+$', pa.path)
         if s is None: s = ''
         else: s = s.group()
-        f = TemporaryFile(prefix='_', suffix=s)
+        f = NamedTemporaryFile(prefix='_', suffix=s)
         f.write(tmp.read())
         f.flush()
         f.seek(0)
