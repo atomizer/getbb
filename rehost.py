@@ -186,18 +186,18 @@ def rehost(url, cache=True, image=False):
     
     fd, ftype, finfo = open_thing(s)
     if fd is None:
-        return s  # failed to open
+        return url  # failed to open
     fname = fd.name
     if image:
         if ftype not in IMAGE_TYPES:
-            return s  # not an image
+            return url  # not an image
         if re.search(r'\.\w+$', fname) is None:
             fname += IMAGE_EXT[IMAGE_TYPES.index(ftype)]
     
     pf = MultipartParam('file', filetype=ftype, fileobj=fd, filename=fname)
     if pf.get_size(gen_boundary()) > MAX_SIZE:
         print(ERR, 'Too big object: \'{0}\''.format(s))
-        return s
+        return url
     datagen, headers = multipart_encode([pf])
     
     req = urllib2.Request(UPLOAD_URL, datagen, headers)
@@ -205,13 +205,13 @@ def rehost(url, cache=True, image=False):
         page = streaming_opener().open(req, timeout=TIMEOUT).read()
     except URLError as ex:
         print_urlerror(UPLOAD_URL, ex)
-        return s
+        return url
         
     try:
         g = re.search(FLAGS + DOWNLOAD_URL, page).group()
     except:
         print(ERR, 'Uploaded, but failed to get URL - layout changed?')
-        return s    # falling back
+        return url    # falling back
     
     if cache and finfo is not None:
         cache_write(url, g)
