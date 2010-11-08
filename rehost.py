@@ -115,7 +115,7 @@ def open_thing(address, accept_types=None):
             print_urlerror(address, ex)
             return (None, None, None)
         except ValueError:
-            print(ERR, 'Bad URL: \'{0}\''.format(address))
+            print(ERR, 'Bad URL: \'{0}\''.format(address.encode('utf-8')))
             return (None, None, None)
         i = tmp.info()
         t = i.gettype()
