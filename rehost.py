@@ -98,7 +98,7 @@ def cache_write(src, dl):
         open(CACHE_FILE, 'a+').write('{0}\t{1}\n'.format(src, dl))
     
     
-def open_thing(address):
+def open_thing(address, accept_types=None):
     """Try to open an URL or local file.
     
     Return a tuple (file, type, info), where:
@@ -122,6 +122,8 @@ def open_thing(address):
         s = re.search(r'\.\w+$', pa.path)
         if s is None: s = ''
         else: s = s.group()
+        if accept_types is not None and t not in accept_types:
+            return (None, None, None)
         f = NamedTemporaryFile(prefix='_', suffix=s)
         f.write(tmp.read())
         f.flush()
@@ -181,18 +183,17 @@ def rehost(url, cache=True, image=False):
     
     if image:
         s = recover_image(url)
+        ts = IMAGE_TYPES
     else:
         s = url
-    
-    fd, ftype, finfo = open_thing(s)
+        ts = None
+        
+    fd, ftype, finfo = open_thing(s, accept_types=ts)
     if fd is None:
-        return url  # failed to open
+        return url  # failed to open or wrong type
     fname = fd.name
-    if image:
-        if ftype not in IMAGE_TYPES:
-            return url  # not an image
-        if re.search(r'\.\w+$', fname) is None:
-            fname += IMAGE_EXT[IMAGE_TYPES.index(ftype)]
+    if image and re.search(r'\.\w+$', fname) is None:
+        fname += IMAGE_EXT[IMAGE_TYPES.index(ftype)]
     
     pf = MultipartParam('file', filetype=ftype, fileobj=fd, filename=fname)
     if pf.get_size(gen_boundary()) > MAX_SIZE:
