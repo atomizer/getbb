@@ -132,7 +132,7 @@ def decode_html_entities(string):
     
     
 def hashurl(u):
-    return sha1(u).hexdigest()
+    return sha1(u.encode('utf-8')).hexdigest()
     
     
 def reduce_nest(code, left, right, srcleft, srcright):
