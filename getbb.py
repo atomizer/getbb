@@ -249,7 +249,9 @@ def process(s):
     # Strip out any HTML leftovers.
     s = re.sub('<[^>]+>','',s)
     
-    def print_urls(a, b):
+    def print_urls(a, b, p=None):
+        if p:
+            print('{0}'.format(p.size - p.free_count()), end=' ')
         if a != b:
             print('{0} >> {1}'.format(a, b))
     
@@ -260,7 +262,7 @@ def process(s):
         def finale(url):
             def f(g):
                 urls[hashurl(url)] = g.value
-                print_urls(url, g.value)
+                print_urls(url, g.value, pool)
             return f
         for url in urls.itervalues():
             j = pool.spawn(rehost, url, image=True)
@@ -279,7 +281,7 @@ def process(s):
             imgs += 1
         s = s.replace(p, urls[p])
     
-    print('Done: replaced {0} tags, {1} images.'.format(m, imgs))
+    print('\nDone: replaced {0} tags, {1} images.'.format(m, imgs))
     return decode_html_entities(s).strip()
 
 
