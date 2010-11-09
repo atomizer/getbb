@@ -67,7 +67,7 @@ def print_urlerror(url, ex):
     if msg: msg = 'HTTP ' + msg
     msg += str(getattr(ex, 'reason', ''))
     if not msg: msg = str(ex)
-    print(ERR, 'Request to \'{0}\' failed: {1}'.format(url, msg))
+    print(ERR, 'Request to', url, 'failed:', msg)
     
     
 def uaopener(handler=urllib2.BaseHandler, uagent=USER_AGENT):
@@ -103,27 +103,27 @@ def open_thing(address, accept_types=None):
     
     Return a tuple (file, type, info), where:
     -- file: file object or None if an error occured
-    -- type: guessed MIME type
+    -- type: MIME type (if known)
     -- info: httplib.HTTPMessage object (if present)
     """    
     f, t, i = None, None, None
     pa = urlparse(address)
-    if pa.scheme in ['http', 'https', 'ftp', 'file']:
+    if pa.scheme in ['http', 'https', 'ftp']:
         try:
             tmp = urlopen(address, timeout=TIMEOUT)
         except URLError as ex:
             print_urlerror(address, ex)
-            return (None, None, None)
+            return (f, t, i)
         except ValueError:
-            print(ERR, 'Bad URL: \'{0}\''.format(address.encode('utf-8')))
-            return (None, None, None)
+            print(ERR, 'Bad URL:', address)
+            return (f, t, i)
         i = tmp.info()
         t = i.gettype()
+        if accept_types is not None and t not in accept_types:
+            return (f, t, i)
         s = re.search(r'\.\w+$', pa.path)
         if s is None: s = ''
         else: s = s.group()
-        if accept_types is not None and t not in accept_types:
-            return (None, None, None)
         f = NamedTemporaryFile(prefix='_', suffix=s)
         f.write(tmp.read())
         f.flush()
@@ -136,11 +136,8 @@ def open_thing(address, accept_types=None):
                 f = open(fp, 'rb')
             except IOError as ex:
                 print(ERR, 'I/O error.', ex)
-                return (None, None, None)
         else:
-            print(ERR, "Not a file: '{0}'".format(fp))
-    if t is None or t == '':
-        t = 'application/octet-stream'
+            print(ERR, 'Unknown object:', fp)
     return (f, t, i)
     
 
@@ -157,8 +154,8 @@ def recover_image(url):
         try:
             return re.search(FLAGS + R, page).group(1)
         except IndexError:
-            print(ERR, 'Layout changed at \'', urlparse(url).netloc,
-                '\' - unable to parse!')
+            print(ERR, 'Layout changed at', urlparse(url).netloc,
+                '- unable to parse!')
             return url
     for (L, R) in RW:
         dlink = re.sub(L, R, url)
@@ -197,21 +194,28 @@ def rehost(url, cache=True, image=False):
     
     pf = MultipartParam('file', filetype=ftype, fileobj=fd, filename=fname)
     if pf.get_size(gen_boundary()) > MAX_SIZE:
-        print(ERR, 'Too big object: \'{0}\''.format(s))
+        print(ERR, 'Too big object:', s)
         return url
     datagen, headers = multipart_encode([pf])
     
     req = urllib2.Request(UPLOAD_URL, datagen, headers)
     try:
-        page = streaming_opener().open(req, timeout=TIMEOUT).read()
+        pd = streaming_opener().open(req, timeout=TIMEOUT)
+        page = pd.read().decode(pd.info().getparam('charset'))
     except URLError as ex:
         print_urlerror(UPLOAD_URL, ex)
         return url
         
-    try:
-        g = re.search(FLAGS + DOWNLOAD_URL, page).group()
-    except:
-        print(ERR, 'Uploaded, but failed to get URL - layout changed?')
+    g = re.search(FLAGS + DOWNLOAD_URL, page)
+    if g:
+        g = g.group(0)
+    else:
+        g = re.search(FLAGS + '<div id="error">(.*?)</div>', page)
+        if g:
+            g = re.sub('<[^>]+>', '', g.group(1)).strip()
+            print(ERR, 'file.kirovnet.ru says:', g)
+        else:
+            print(ERR, 'Failed to get URL (layout changed?)')
         return url    # falling back
     
     if cache and finfo is not None:

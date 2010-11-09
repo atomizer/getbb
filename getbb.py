@@ -194,7 +194,8 @@ def proctag(m):
                 else:
                     g = target_root + g
             if urlparse(g).scheme == 'http':
-                g_ = hashurl(g)  # something unique?
+                g = decode_html_entities(g)
+                g_ = hashurl(g)
                 # Save url and it's replacement for future.
                 urls[g_], g = g, g_
                 if d['tag'] == 'a':
@@ -300,24 +301,27 @@ if __name__ == '__main__':
     print('Opening target...')
     fd, ftype, finfo = open_thing(target)
     if fd is None:
-        sys.exit("\nNo access to '{0}', terminated.".format(target))
-    if ftype is None or ftype.find('text') != 0:
-        sys.exit("\nError: got type '{0}', expected 'text/*'.".format(ftype))
+        sys.exit('\nTerminated: target unreachable.')
+    if finfo is not None and finfo.maintype != 'text':
+        sys.exit("\nTerminated: cannot parse '{0}'.".format(finfo.maintype))
     target_charset = 'cp1251'
     if finfo is not None:
         c = finfo.getparam('charset')
         if c is not None:
             target_charset = c
+    instr = fd.read().decode(target_charset)
     
-    istr = unicode(fd.read(), target_charset)
     try:
-        istr = process(istr)
+        outstr = process(instr)
     except KeyboardInterrupt as ex:
-        sys.exit('\nUnexpected manual termination')
-        
-    f = open(output_file, 'w')
-    f.write(istr.encode('utf-8'))
+        sys.exit('\nTerminated manually.')
     
-    print("Output written to '{0}'".format(output_file))
+    try:
+        open(output_file, 'w').write(outstr.encode('utf-8'))
+        print('Output written to', output_file)
+    except IOError as ex:
+        print('[!] I/O error.', ex)
+        sys.exit(1)
+    
     if os.name == 'nt': os.startfile(output_file, 'open')
     
