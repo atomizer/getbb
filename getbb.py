@@ -104,6 +104,10 @@ TAGS_WITH_URLS = ('a', 'var', 'img',)
 BBTAGS_NO_NEST = (
     '[b]', '[i]', '[u]', '[color=_]', '[align=_]', '[size=_]',
 )
+CLOSED_TAGS = (
+    'meta', 'base', 'basefont', 'param', 'frame',
+    'link', 'img', 'br', 'hr', 'area', 'input',
+)
 
 POOL_SIZE = 10
 
@@ -241,6 +245,11 @@ def process(s):
     # Apply simple rules.
     for (k, r) in SIMPLE_RULES:
         s = re.sub(FLAGS + k, r, s)
+    # Close tags that should be closed, leave already closed as-is
+    for t in CLOSED_TAGS:
+        s,n = re.subn(FLAGS + r'<({0}[^>]*?)/?>'.format(t), r'<\1/>', s)
+        # Maybe this is overkill, but why not.
+        s = s.replace('</{0}>'.format(t), '')
     # Apply complex rules.
     (s, n) = ntag_re.subn(proctag, s)
     m, n = n, 1
