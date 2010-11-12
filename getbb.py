@@ -65,33 +65,41 @@ SIMPLE_RULES = (
     ('<textarea>', '[font="monospace"]'),
     ('</textarea>', '[/font]'),
 )
-COMPLEX_RULES = {
-    'post-b': ('[b]','[/b]'),
-    'post-i': ('[i]','[/i]'),
-    'post-u': ('[u]','[/u]'),
-    'font-weight: ?bold': ('[b]','[/b]'),
-    'font-style: ?italic': ('[i]','[/i]'),
-    'text-decoration: ?underline': ('[u]','[/u]'),
-    'href="([^"]+)': ('[url=_]','[/url]'),
-    'src="([^"]+)': ('[img]','[/img]'),
-    'class="postImg" title="([^"]+)': ('[img]','[/img]'),
-    'class="postImg [^"]*?img-([^ "]*)[^>]*?title="([^"]+)': ('[img=_]','[/img]'),
-    'text-align: ?([^;"]+)': ('[align=_]', '[/align]'),
-    '[^v]align="([^"]+)': ('[align=_]', '[/align]'), # hdclub, epidemz
-    'color: ?([^;"]+)': ('[color=_]', '[/color]'),
-    'font-size: ?(\d+)': ('[size=_]',  '[/size]'),
-    'font-family: ?([^;"]+)': ('[font="_"]','[/font]'),
-    'spoiler-wrap': ('{#SP#}','[/spoiler]'), # hdclub, pirat.ca, epidemz(?)
-    'sp-wrap': ('{#SP#}','[/spoiler]'), # rutracker
-    '(spoiler-head|sp-head)': ('{#SHS#}','{#SHE#}'),
-    'sp-body[^>]* title="([^"]+)': ('{#SHS#}_{#SHE#}',''),
-    'class="q"': ('[quote]','[/quote]'),
-    'class="quote"': ('[quote]','[/quote]'),
-    'class="q" head="([^"]+)': ('[quote="_"]','[/quote]'),
-    'c-body': ('[code]','[/code]'),
-    'post-pre': ('[font="monospace"]','[/font]'),
-    'float: ?(left|right)': ('{#FLOAT#}',''),
-}
+COMPLEX_RULES = (
+    # simple text formatting
+    ('post-b', ('[b]','[/b]')),
+    ('post-i', ('[i]','[/i]')),
+    ('post-u', ('[u]','[/u]')),
+    ('font-weight: ?bold', ('[b]','[/b]')),
+    ('font-style: ?italic', ('[i]','[/i]')),
+    ('text-decoration: ?underline', ('[u]','[/u]')),
+    ('color: ?([^;"]+)', ('[color=_]', '[/color]')),
+    ('font-size: ?(\d+)', ('[size=_]',  '[/size]')),
+    ('font-family: ?([^;"]+)', ('[font="_"]','[/font]')),
+    # URLs
+    ('href="([^"]+)', ('[url=_]','[/url]')),
+    # images
+    ('src="([^"]+)', ('[img]','[/img]')),
+    ('class="postImg" title="([^"]+)', ('[img]','[/img]')),
+    ('class="postImg [^"]*?img-([^ "]*)[^>]*?title="([^"]+)',
+        ('[img=_]','[/img]')),
+    # align
+    ('text-align: ?([^;"]+)', ('[align=_]', '[/align]')),
+    (' align="([^"]+)', ('[align=_]', '[/align]')), # hdclub, epidemz
+    ('float: ?(left|right)', ('{#FLOAT#}','')),
+    # spoilers
+    ('spoiler-wrap', ('{#SP#}','[/spoiler]')), # hdclub, pirat.ca, epidemz(?)
+    ('sp-wrap', ('{#SP#}','[/spoiler]')), # rutracker
+    ('(spoiler-head|sp-head)', ('{#SHS#}','{#SHE#}')),
+    ('sp-body[^>]* title="([^"]+)', ('{#SHS#}_{#SHE#}','')),
+    # quotes
+    ('class="q"', ('[quote]','[/quote]')),
+    ('class="quote"', ('[quote]','[/quote]')),
+    ('class="q" head="([^"]+)', ('[quote="_"]','[/quote]')),
+    # code & pre
+    ('c-body', ('[code]','[/code]')),
+    ('post-pre', ('[font="monospace"]','[/font]')),
+)
 
 BANNED_TAGS = ('fieldset', 'style', 'form',)
 SKIP_TAGS = ('object', 'param', 'embed', 'script', 'p',)
@@ -169,7 +177,7 @@ def proctag(m):
             return ''
             
     dc = d['content']
-    for (i,v) in COMPLEX_RULES.iteritems():
+    for (i,v) in COMPLEX_RULES:
         dm = re.search(FLAGS + i, d['attr'])
         if dm is None:
             continue
@@ -180,7 +188,7 @@ def proctag(m):
         except IndexError:
             g = ''
         # Fix hdclub fucked-up colors.
-        if site_root.find('hdclub') > 0 and cltag == '[/color]':
+        if 'hdclub' in site_root and cltag == '[/color]':
             if g == '#999966': g = '#005000'
             if g == '#006699': g = '#000000'
         # <div style="float:right"><img/></div> => [img=right]
