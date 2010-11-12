@@ -83,19 +83,21 @@ install_opener(uaopener())
 
 def cache_search(address):
     """Find out if object at this address is already rehosted."""
-    for cs in open(CACHE_FILE, 'a+').readlines():
-        try:
-            sl, fl = cs.strip().split()[:2]
-            if sl == address: return fl
-        except ValueError:
-            # less than 2 urls on line - ignoring
-            pass
+    with open(CACHE_FILE, 'a+') as f:
+        for cs in f:
+            try:
+                sl, fl = cs.strip().split()[:2]
+                if sl == address:
+                    return fl
+            except ValueError:
+                pass  # bad format
     
     
 def cache_write(src, dl):
     """Remember the download URL for re-use."""
     if src != dl and not cache_search(src):
-        open(CACHE_FILE, 'a+').write('{0}\t{1}\n'.format(src, dl))
+        with open(CACHE_FILE, 'a+') as cf:
+            cf.write('{0}\t{1}\n'.format(src, dl))
     
     
 def open_thing(address, accept_types=None):
