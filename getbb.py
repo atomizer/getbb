@@ -232,7 +232,7 @@ def proctag(m):
 def process(s):
     global urls
     urls = {}
-    print('Processing tags...')
+    print('Processing tags...', end=' ')
     # Reduce the page.
     for p in PSTO_PATTERNS:
         m = re.search(FLAGS + p, s)
@@ -258,6 +258,7 @@ def process(s):
         m += n
     # Strip out any HTML leftovers.
     s = re.sub('<[^>]+>','',s)
+    print('done: {0} tags'.format(m))
     
     def print_urls(a, b, p=None):
         if p:
@@ -291,10 +292,21 @@ def process(s):
             imgs += 1
         s = s.replace(p, urls[p])
     
-    print('\nDone: replaced {0} tags, {1} images.'.format(m, imgs))
+    print('\n...done: {0} images'.format(imgs))
     return decode_html_entities(s).strip()
 
 
+def postprocess(s):
+    """Prettify the bbcode."""
+    print('Post-processing...')
+    if any([x in site_root for x in ('epidemz', 'hdclub')]):
+        # Make the poster to float to the right
+        s = re.sub(r'\[img[^]]*\]([^[]*\[/img\])', r'[img=right]\1', s, 1)
+        print('* applied poster fix')
+    print('...done.')
+    return s
+    
+    
 if __name__ == '__main__':
     if not sys.argv[1:]:
         print(__doc__)
@@ -307,12 +319,13 @@ if __name__ == '__main__':
     site_root = urlunparse([tp.scheme, tp.netloc, '', '', '', '',])
     target_root = site_root + re.sub('[^/]*$', '', tp.path)
     
-    print('Opening target...')
+    print('Opening target...', end=' ')
     fd, ftype, finfo = open_thing(target)
     if fd is None:
         sys.exit('\nTerminated: target unreachable.')
     if finfo is not None and finfo.maintype != 'text':
         sys.exit("\nTerminated: cannot parse '{0}'.".format(finfo.maintype))
+    print('ok')
     target_charset = 'cp1251'
     if finfo is not None:
         c = finfo.getparam('charset')
@@ -324,6 +337,11 @@ if __name__ == '__main__':
         outstr = process(instr)
     except KeyboardInterrupt as ex:
         sys.exit('\nTerminated manually.')
+    
+    try:
+        outstr = postprocess(outstr)
+    except KeyboardInterrupt as ex:
+        print('\nPost-processing terminated.')
     
     try:
         open(output_file, 'w').write(outstr.encode('utf-8'))
