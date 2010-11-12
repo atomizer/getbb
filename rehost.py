@@ -164,7 +164,7 @@ def recover_image(url):
     return url
     
     
-def rehost(url, cache=True, image=False):
+def rehost(url, force_cache=False, image=False):
     """Take URL or file path, return download URL.
     
     If image=True, also try to retrieve direct link before rehosting.
@@ -218,7 +218,7 @@ def rehost(url, cache=True, image=False):
             print(ERR, 'Failed to get URL (layout changed?)')
         return url    # falling back
     
-    if cache and finfo is not None:
+    if force_cache or finfo is not None:
         cache_write(url, g)
     return g
     
