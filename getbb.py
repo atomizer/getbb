@@ -43,7 +43,7 @@ ptag_re = re.compile(FLAGS +
 PSTO_PATTERNS = (
     'class="post_body"[^>]*>(.*?)</div><!--/post_body',  # rutracker-alike
     'class="heading_b"[^>]*>(.*?)<a name="startcomments"',  # hdclub
-    'id="news-id-[^>]*>(.*?)</td>',  # epidemz
+    'id="news-id-[^>]*>(.*?)<br>',  # epidemz
 )
 SIMPLE_RULES = (
     ('\n', ''), ('\r', ''), ('<wbr>', ''), ('<!--.*?-->', ''),
@@ -309,7 +309,7 @@ def postprocess(s):
     print('Post-processing...')
     if any([x in site_root for x in ('epidemz', 'hdclub')]):
         # Make the poster to float to the right
-        s = re.sub(r'\[img[^]]*\]([^[]*\[/img\])', r'[img=right]\1', s, 1)
+        s = re.sub(r'\[img[^]]*\]', r'[img=right]', s, 1)
         print('* applied poster fix')
     print('...done.')
     return s
