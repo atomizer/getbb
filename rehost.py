@@ -176,6 +176,8 @@ def rehost(url, force_cache=False, image=False):
         rehost('/home/me/doc.rst')
     """
     
+    if re.match(DOWNLOAD_URL, url):
+        return url  # already there
     cl = cache_search(url)
     if cl is not None:
         return cl  # already in cache
@@ -230,8 +232,7 @@ if __name__ == '__main__':
     if sys.argv[1:]:
         for arg in sys.argv[1:]:
             t = rehost(arg)
-            if arg != t:
-                print(t)  # something better would be cool.
+            print(t)  # something better would be cool.
         if os.name == 'nt':
             sys.stdin.readline()
     else:
