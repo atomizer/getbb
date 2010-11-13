@@ -22,7 +22,7 @@ from tempfile import NamedTemporaryFile
 from encode import multipart_encode, MultipartParam, gen_boundary
 from streaminghttp import streaming_opener
 
-__all__ = ['rehost', 'open_thing', 'print_urlerror']
+__all__ = ['rehost', 'open_thing', 'print_urlerror', 'DOWNLOAD_URL']
 
 USER_AGENT = 'Mozilla/5.0 Firefox/3.6.12'
 UPLOAD_URL = 'http://file.kirovnet.ru/upload'
