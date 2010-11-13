@@ -165,6 +165,7 @@ def reduce_nest(code, left, right, srcleft, srcright):
     r = (left + code + right).replace(left + right, '')
     return r
     
+    
 def proctag(m):
     """Return a replacement for single HTML tag."""
     global urls
@@ -274,7 +275,7 @@ def process(s):
         if a != b:
             print('{0} >> {1}'.format(a, b))
     
-    print('Processing URLs...')
+    print('Processing {0} URLs...\n'.format(len(urls)))
     # Rehost images.
     if gevent:
         pool = Pool(POOL_SIZE)
@@ -300,7 +301,7 @@ def process(s):
             imgs += 1
         s = s.replace(p, urls[p])
     
-    print('\n...done: {0} images'.format(imgs))
+    print('\nFound and replaced {0} images'.format(imgs))
     return decode_html_entities(s).strip()
 
 
@@ -310,8 +311,13 @@ def postprocess(s):
     if any([x in site_root for x in ('epidemz', 'hdclub')]):
         # Make the poster to float to the right
         s = re.sub(r'\[img[^]]*\]', r'[img=right]', s, 1)
-        print('* applied poster fix')
-    print('...done.')
+        print('-- poster fix')
+    if '[list]' not in s and '[*]' in s:
+        s, n = re.subn(r'(\[\*\].*)', r'[list]\1[/list]', s)
+        if n > 0:
+            s = re.sub(r'\[/list\]\s*\[list\]', '', s)
+            print('-- list fix ({0} items)'.format(n))
+    print('Post-processing done')
     return s
     
     
