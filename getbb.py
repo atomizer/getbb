@@ -22,7 +22,6 @@ import os
 import re
 from urlparse import urlparse, urlunparse
 from hashlib import sha1
-from StringIO import StringIO
 
 try:
     import gevent
@@ -126,9 +125,9 @@ CLOSED_TAGS = (
 
 POOL_SIZE = 10
 
-THUMB_SIZE = (240, 240)
-thumb_re = re.compile(r'\[url=(?P<url>{0})\]'.format(DOWNLOAD_URL) +
-    '.*?\[img\](?P=url)\[/img\].*?\[/url\]')
+THUMB_SIZE = (220, 220)
+thumb_re = re.compile((r'\[url=(?P<url>{0})\].*?\[img\](?P<th>{0})' +
+    '\[/img\].*?\[/url\]').format(DOWNLOAD_URL))
 
 site_root = ''
 target_root = ''
@@ -136,20 +135,6 @@ output_file = 'out.txt'
 urls = {}
 
 
-def downsize(i, box):
-    """Take an Image, return minimized one."""
-    iw, ih = i.size
-    while iw > 2 * box[0] and ih > 2 * box[1]:
-        iw /= 2
-        ih /= 2
-    # fast pre-resize
-    i = i.resize((iw, ih), Image.NEAREST)
-    if box[0] < iw or box[1] < ih:
-        # actual resize
-        i.thumbnail(box, Image.ANTIALIAS)
-    return i
-    
-    
 def decode_html_entities(string):
     # http://snippets.dzone.com/posts/show/4569
     from htmlentitydefs import name2codepoint as n2cp
@@ -338,42 +323,48 @@ def postprocess(s):
     # Poster fix: make the poster float to the right
     if any([x in site_root for x in ('epidemz', 'hdclub')]):
         s = re.sub(r'\[img[^]]*\]', r'[img=right]', s, 1)
-        print('-- poster fix')
+        print('-- poster fix applied')
     
     # List fix: convert list of "[*]" to proper bulleted list
     if '[list]' not in s and '[*]' in s:
         s, n = re.subn(r'(\[\*\].*)', r'[list]\1[/list]', s)
         if n > 0:
             s = re.sub(r'\[/list\]\s*\[list\]', '', s)
-            print('-- list fix ({0} items)'.format(n))
+            print('-- list fix applied ({0} items)'.format(n))
     
     # Thumbnail fix: generate thumbnails for linked images
-    def thumb(m):
-        d = m.groupdict()
-        url = d['url']
-        # old_th = d['th']
-        fallback = '[img]{0}[/img]'.format(url)
-        tname = 't' + hashurl(url) + '.jpg'
-        th = rehost_m.cache_search(tname)
-        if th is None:
+    if Image:
+        def thumb(m):
+            d = m.groupdict()
+            url = d['url']
+            old_th = d['th']
+            code_origin = m.group()
+            code_normal = '[url={0}][img]{1}[/img][/url]'
+            tname = 't' + hashurl(url) + '.jpg'
+            th = rehost_m.cache_search(tname)
+            if th is not None:
+                print('.  {0} - from cache'.format(th))
+                return code_normal.format(url, th)
             try:
                 i = Image.open(open_thing(url)[0])
-            except:
-                return fallback
-            if all([x < 700 for x in i.size]):
-                # dont make thumbnails for already small enough images
-                return fallback
-            try:
-                downsize(i, THUMB_SIZE).save(tname, quality=85)
+                if old_th != url:
+                    t = Image.open(open_thing(old_th)[0])
+                    f1 = float(i.size[1]) / i.size[0]
+                    f2 = float(t.size[1]) / t.size[0]
+                    if abs(f1 - f2) / (f1 + f2) < 0.02 and t.size[0] >= 180:
+                        print('.  {0} - good'.format(old_th))
+                        return code_origin
+                i.thumbnail(THUMB_SIZE, Image.ANTIALIAS)
+                i.save(tname, quality=85)
                 th = rehost(tname, force_cache=True)
                 os.remove(tname)
             except:
-                return fallback
-        print('{0} t-> {1}'.format(url,th))
-        return '[url={0}][img]{1}[/img][/url]'.format(url, th)
-    s, n = thumb_re.subn(thumb, s)
-    if n > 0:
-        print('-- thumbnail fix ({0})'.format(n))
+                return code_origin
+            print('.  {0} - new'.format(th))
+            return code_normal.format(url, th)
+        s, n = thumb_re.subn(thumb, s)
+        if n > 0:
+            print('-- thumbnail fix ({0} checked)'.format(n))
     
     print('Post-processing done')
     return s
