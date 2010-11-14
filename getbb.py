@@ -33,7 +33,7 @@ except ImportError:
 try:
     import Image
 except ImportError:
-    pass
+    Image = None
 
 import rehost as rehost_m
 from rehost import *
