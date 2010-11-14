@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # 2010 atomizer
-# version 0.9.pre
+# version 0.10
 """
 Get BBcode source from compiled HTML page.
 
