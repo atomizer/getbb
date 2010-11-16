@@ -107,8 +107,11 @@ COMPLEX_RULES = (
     ('post-pre', ('[font="monospace"]','[/font]')),
 )
 
-BANNED_TAGS = ('fieldset', 'style', 'form',)
-SKIP_TAGS = ('object', 'param', 'embed', 'script', 'p',)
+BANNED_TAGS = ('fieldset', 'form',)
+SKIP_TAGS = (
+    'object', 'param', 'embed',
+    'script', 'style', 'head', 'p',
+)
 SKIP_TAGS_ATTR = (
     'display: none', '"heading"', 'colhead',
     'sp-fold', 'q-head', 'c-head', 'sp-title', 'quote-title',
@@ -266,14 +269,14 @@ def process(s):
         s = re.sub(FLAGS + k, r, s)
     # Close tags that should be closed, leave already closed as-is
     for t in CLOSED_TAGS:
-        s,n = re.subn(FLAGS + r'<({0}[^>]*?)/?>'.format(t), r'<\1/>', s)
+        s = re.sub(FLAGS + r'<({0}[^>]*?)/?>'.format(t), r'<\1/>', s)
         # Maybe this is overkill, but why not.
         s = s.replace('</{0}>'.format(t), '')
     # Apply complex rules.
     (s, n) = ntag_re.subn(proctag, s)
     m, n = n, 1
     while n > 0:
-        (s,n) = ptag_re.subn(proctag, s)
+        (s, n) = ptag_re.subn(proctag, s)
         m += n
     # Strip out any HTML leftovers.
     s = re.sub('<[^>]+>','',s)
@@ -385,9 +388,13 @@ if __name__ == '__main__':
     print('Opening target...', end=' ')
     fd, ftype, finfo = open_thing(target)
     if fd is None:
-        sys.exit('\nTerminated: target unreachable.')
-    if finfo is not None and finfo.maintype != 'text':
-        sys.exit("\nTerminated: cannot parse '{0}'.".format(finfo.maintype))
+        sys.exit('Terminated: target unreachable.')
+    if finfo is not None:
+        if finfo.maintype != 'text':
+            sys.exit('Terminated: cannot parse "{0}".'.format(finfo.maintype))
+        if finfo.url != target and 'login' in finfo.url:
+            sys.exit('Terminated: redirected to login page.\n' +
+                'Try to save the page from your browser and pass the file.')
     print('ok')
     target_charset = 'cp1251'
     if finfo is not None:
