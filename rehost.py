@@ -192,15 +192,18 @@ def rehost(url, force_cache=False, image=False):
     fd, ftype, finfo = open_thing(s, accept_types=ts)
     if fd is None:
         return url  # failed to open or wrong type
-    fname = ''.join(random.sample(string.lowercase, 6))
-    e = re.search(r'\.\w+$', finfo.url)
-    if e is None:
-        e = ''
+    if finfo is not None:
+        fname = ''.join(random.sample(string.lowercase, 6))
+        e = re.search(r'\.\w+$', finfo.url)
+        if e is None:
+            e = ''
+        else:
+            e = e.group()
+        if image and ftype is not None:
+            e = IMAGE_EXT[IMAGE_TYPES.index(ftype)]
+        fname += e
     else:
-        e = e.group()
-    if image:
-        e = IMAGE_EXT[IMAGE_TYPES.index(ftype)]
-    fname += e
+        fname = fd.name
     pf = MultipartParam('file', filetype=ftype, fileobj=fd, filename=fname)
     if pf.get_size(gen_boundary()) > MAX_SIZE:
         print(ERR, 'Too big object:', s)
