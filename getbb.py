@@ -41,10 +41,10 @@ from rehost import *
 FLAGS = '(?si)'
 # self-closed tags
 ntag_re = re.compile(FLAGS +
-    '<(?P<tag>[^/ >]+)(?P<attr>[^>]*)(?P<content>)/>')
+    '<(?P<tag>\w+)(?P<attr>[^>]*)(?P<content>)/>')
 # paired tags
 ptag_re = re.compile(FLAGS +
-    '<(?P<tag>[^/ >]+)(?P<attr>[^>]*)>(?P<content>[^<]*)</[^>]+>')
+    '<(?P<tag>\w+)(?P<attr>[^>]*)>(?P<content>[^<]*)</\w+>')
 
 PSTO_PATTERNS = (
     'class="post_body"[^>]*>(.*?)</div><!--/post_body',  # rutracker-alike
