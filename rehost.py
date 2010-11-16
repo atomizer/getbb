@@ -120,6 +120,7 @@ def open_thing(address, accept_types=None):
             print(ERR, 'Bad URL:', address)
             return (f, t, i)
         i = tmp.info()
+        i.url = tmp.url
         t = i.gettype()
         if accept_types is not None and t not in accept_types:
             return (f, t, i)
