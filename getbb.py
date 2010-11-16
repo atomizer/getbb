@@ -356,13 +356,18 @@ def postprocess(s):
                     f2 = float(t.size[1]) / t.size[0]
                     if abs(f1 - f2) / (f1 + f2) < 0.02 and t.size[0] >= 180:
                         print('.  {0} - good'.format(old_th))
+                        rehost_m.cache_write(tname, old_th)
                         return code_origin
                 i.thumbnail(THUMB_SIZE, Image.ANTIALIAS)
                 i.save(tname, quality=85)
-                th = rehost(tname, force_cache=True)
-                os.remove(tname)
-            except:
+            except IOError as ex:
+                print(ex)
                 return code_origin
+            th = rehost(tname, force_cache=True)
+            try:
+                os.unlink(tname)
+            except:
+                pass
             print('.  {0} - new'.format(th))
             return code_normal.format(url, th)
         s, n = thumb_re.subn(thumb, s)
