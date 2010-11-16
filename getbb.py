@@ -90,9 +90,9 @@ COMPLEX_RULES = (
     ('class="postImg [^"]*?img-([^ "]*)[^>]*?title="([^"]+)',
         ('[img=_]','[/img]')),
     # align
+    ('float: ?(left|right)', ('{#FLOAT#}','')),
     ('text-align: ?([^;"]+)', ('[align=_]', '[/align]')),
     (' align="([^"]+)', ('[align=_]', '[/align]')), # hdclub, epidemz
-    ('float: ?(left|right)', ('{#FLOAT#}','')),
     # spoilers
     ('spoiler-wrap', ('{#SP#}','[/spoiler]')), # hdclub, pirat.ca, epidemz(?)
     ('sp-wrap', ('{#SP#}','[/spoiler]')), # rutracker
