@@ -14,9 +14,11 @@ import sys
 import os
 import re
 import urllib2
+import string
+import random
 from urllib2 import build_opener, install_opener, urlopen, URLError
 from urlparse import urlparse
-from tempfile import NamedTemporaryFile
+from tempfile import TemporaryFile
 
 # from http://atlee.ca/software/poster/
 from encode import multipart_encode, MultipartParam, gen_boundary
@@ -124,10 +126,7 @@ def open_thing(address, accept_types=None):
         t = i.gettype()
         if accept_types is not None and t not in accept_types:
             return (f, t, i)
-        s = re.search(r'\.\w+$', pa.path)
-        if s is None: s = ''
-        else: s = s.group()
-        f = NamedTemporaryFile(prefix='_', suffix=s)
+        f = TemporaryFile()
         f.write(tmp.read())
         f.flush()
         f.seek(0)
@@ -193,10 +192,15 @@ def rehost(url, force_cache=False, image=False):
     fd, ftype, finfo = open_thing(s, accept_types=ts)
     if fd is None:
         return url  # failed to open or wrong type
-    fname = fd.name
-    if image and re.search(r'\.\w+$', fname) is None:
-        fname += IMAGE_EXT[IMAGE_TYPES.index(ftype)]
-    
+    fname = ''.join(random.sample(string.lowercase, 6))
+    e = re.search(r'\.\w+$', finfo.url)
+    if e is None:
+        e = ''
+    else:
+        e = e.group()
+    if image:
+        e = IMAGE_EXT[IMAGE_TYPES.index(ftype)]
+    fname += e
     pf = MultipartParam('file', filetype=ftype, fileobj=fd, filename=fname)
     if pf.get_size(gen_boundary()) > MAX_SIZE:
         print(ERR, 'Too big object:', s)
