@@ -126,10 +126,14 @@ def open_thing(address, accept_types=None):
         t = i.gettype()
         if accept_types is not None and t not in accept_types:
             return (f, t, i)
-        f = TemporaryFile()
-        f.write(tmp.read())
-        f.flush()
-        f.seek(0)
+        try:
+            f = TemporaryFile()
+            f.write(tmp.read())
+            f.flush()
+            f.seek(0)
+        except Exception as ex:
+            print(ERR, ex)
+            return (None, None, None)
     else:
         # Unknown protocol, suppose it's local file path.
         fp = os.path.normpath(address)
