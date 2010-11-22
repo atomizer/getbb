@@ -56,7 +56,7 @@ RW_EXT = (
     ('ipicture.ru/Gallery/Viewfull/', '<input.*?type="text".*?value="([^"]+)'),
     ('img.epidemz.net/s/', '<input.*?type="text".*?value="([^"]+)'),
     ('10pix.ru/view/', 'src="([^"]+10pix.ru/img[^"]+)'),
-    ('imageshack.us/i/', 'rel="image_src" href="([^"]+)'), #???
+    ('imageshack.us/i/', 'rel="image_src" href="([^"]+)'),
 )
 
 IMAGE_TYPES = (
@@ -149,24 +149,23 @@ def open_thing(address, accept_types=None):
 
 def recover_image(url):
     """Apply URL-rewriting rules in effort to get direct link."""
-    for (L, R) in RW_EXT:
-        if re.search(L, url) is None:
-            continue
-        try:
-            page = urlopen(url).read()
-        except URLError as ex:
-            print_urlerror(url, ex)
-            return url
-        try:
-            return re.search(FLAGS + R, page).group(1)
-        except IndexError:
-            print(ERR, 'Layout changed at', urlparse(url).netloc,
-                '- unable to parse!')
-            return url
     for (L, R) in RW:
         dlink = re.sub(L, R, url)
         if dlink != url:
             return dlink
+    try:
+        page = urlopen(url)
+    except URLError as ex:
+        print_urlerror(url, ex)
+        return url
+    for (L, R) in RW_EXT:
+        if re.search(L, page.url) is None:
+            continue
+        try:
+            return re.search(FLAGS + R, page.read()).group(1)
+        except IndexError, URLError:
+            print(ERR, 'Failed to get direct URL:\n', ERR, url)
+            return url
     return url
     
     
