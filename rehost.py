@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # 2010 atomizer
-# version 0.5.pre
+# version 0.6
 """
 Automatic uploader to file.kirovnet.ru.
 
@@ -57,6 +57,7 @@ RW_EXT = (
     ('img.epidemz.net/s/', '<input.*?type="text".*?value="([^"]+)'),
     ('10pix.ru/view/', 'src="([^"]+10pix.ru/img[^"]+)'),
     ('imageshack.us/i/', 'rel="image_src" href="([^"]+)'),
+    ('imageban.ru/show/', r'id=imagecode.*?<img[^>]+src="([^"]+)'),
 )
 
 IMAGE_TYPES = (
