@@ -295,7 +295,6 @@ def process(s):
 def postprocess(s):
     """Prettify the bbcode."""
     print('Post-processing...')
-    s = '\n'.join([x.strip() for x in s.splitlines()])
     
     # Poster fix: make the poster float to the right
     if any([x in site_root for x in ('epidemz', 'hdclub')]):
@@ -348,6 +347,10 @@ def postprocess(s):
         if n > 0:
             print('-- thumbnail fix ({0} checked)'.format(n))
     
+    surround = ('/?quote(="[^"]*")?', '/?spoiler(="[^"]*")?', '/?list', 'hr')
+    for t in surround:
+        s = re.sub(r'\s*(\[' + t + r'\])\s*', r'\n\1\n', s)
+    s = '\n'.join([x.strip() for x in s.splitlines()])
     print('Post-processing done')
     return s
 
