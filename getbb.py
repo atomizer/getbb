@@ -1,25 +1,13 @@
 #!/usr/bin/python
 # 2010 atomizer
 # version 0.10
-"""
-Get BBcode source from compiled HTML page.
-
-Seems to work with:
-    rutracker.org
-    epidemz.net
-    hdclub.org
-    pirat.ca
-    
-Usage:
-    $ python getbb.py url [output_file]
-    $ python getbb.py page.htm [output_file]
-"""
 
 from __future__ import print_function
 
 import sys
 import os
 import re
+import argparse
 from urlparse import urlparse, urlunparse
 from hashlib import sha1
 
@@ -131,11 +119,6 @@ POOL_SIZE = 10
 THUMB_SIZE = (220, 220)
 thumb_re = re.compile((r'\[url=(?P<url>{0})\].*?\[img\](?P<th>{0})' +
     '\[/img\].*?\[/url\]').format(DOWNLOAD_URL))
-
-site_root = ''
-target_root = ''
-output_file = 'out.txt'
-urls = {}
 
 
 def decode_html_entities(string):
@@ -254,13 +237,6 @@ def proctag(m):
 def process(s):
     global urls
     urls = {}
-    print('Processing tags...', end=' ')
-    # Reduce the page.
-    for p in PSTO_PATTERNS:
-        m = re.search(FLAGS + p, s)
-        if m:
-            s = m.group(1)
-            break
     # Cut out bad tags.
     for t in BANNED_TAGS:
         s = s.split('<' + t)[0]
@@ -280,41 +256,39 @@ def process(s):
         m += n
     # Strip out any HTML leftovers.
     s = re.sub('<[^>]+>','',s)
-    print('done: {0} tags'.format(m))
+    if m > 0:
+        print('Replaced {0} tags'.format(m))
     
-    def print_urls(a, b, p=None):
-        if p:
-            print('{0}'.format(p.size - p.free_count()), end=' ')
-        if a != b:
-            print('{0} >> {1}'.format(a, b))
-    
-    print('Processing {0} URLs...\n'.format(len(urls)))
-    # Rehost images.
-    if gevent:
-        pool = Pool(POOL_SIZE)
-        def finale(url):
-            def f(g):
-                urls[hashurl(url)] = g.value
-                print_urls(url, g.value, pool)
-            return f
-        for url in urls.itervalues():
-            j = pool.spawn(rehost, url, image=True)
-            j.link_value(finale(url))
-        pool.join()
-    else:
-        for pat, url in urls.iteritems():
-            new_url = rehost(url, image=True)
-            urls[pat] = new_url
-            print_urls(url, new_url)
-            
+    if not args.no_rehost and len(urls) > 0:
+        def print_urls(a, b):
+            if a != b:
+                print('{0} >> {1}'.format(a, b))
+        print('Processing {0} URLs...'.format(len(urls)))
+        # Rehost images.
+        if gevent:
+            pool = Pool(POOL_SIZE)
+            def fin(h, url):
+                def f(g):
+                    urls[h] = g.value
+                    print_urls(url, g.value)
+                return f
+            for h, url in urls.iteritems():
+                j = pool.spawn(rehost, url, image=True)
+                j.link_value(fin(h, url))
+            pool.join()
+        else:
+            for h, url in urls.iteritems():
+                new_url = rehost(url, image=True)
+                urls[h] = new_url
+                print_urls(url, new_url)
     # Bring URLs back in places.
     imgs = 0
     for p, url in urls.iteritems():
         if hashurl(url) != p:
             imgs += 1
         s = s.replace(p, urls[p])
-    
-    print('\nFound and replaced {0} images'.format(imgs))
+    if imgs > 0:
+        print('Found and replaced {0} images'.format(imgs))
     return decode_html_entities(s).strip()
 
 
@@ -336,7 +310,7 @@ def postprocess(s):
             print('-- list fix applied ({0} items)'.format(n))
     
     # Thumbnail fix: generate thumbnails for linked images
-    if Image:
+    if not args.no_thumb and Image:
         def thumb(m):
             d = m.groupdict()
             url = d['url']
@@ -379,50 +353,89 @@ def postprocess(s):
 
 
 if __name__ == '__main__':
-    if not sys.argv[1:]:
-        print(__doc__)
-        sys.exit()
-    if sys.argv[2:]:
-        output_file = sys.argv[2]
+    p = argparse.ArgumentParser(
+        description='Decompile HTML to BBCode',
+        epilog='Latest version and more info at https://github.com/atomizer/getbb'
+    )
+    p.add_argument(
+        'target', help='local file or URL to be parsed'
+    )
+    p.add_argument(
+        '-o', dest='output', default='out.txt', type=argparse.FileType('w'),
+        help='write output to file (default: %(default)s)'
+    )
+    p.add_argument(
+        '-c', metavar='N', dest='count', type=int, default=1,
+        help='parse N consecutive posts (default: 1)'
+    )
+    p.add_argument(
+        '-nr', '--no-rehost', action='store_true',
+        help='leave URLs as-is'
+    )
+    p.add_argument(
+        '-nt', '--no-thumb', action='store_true',
+        help='don\'t fix bad thumbnails'
+    )
+    p.add_argument(
+        '-no', '--no-open', action='store_true',
+        help='don\'t open output file in notepad (Windows)'
+    )
+    args = p.parse_args()
     
-    target = sys.argv[1]
-    tp = urlparse(target)
-    site_root = urlunparse([tp.scheme, tp.netloc, '', '', '', '',])
-    target_root = site_root + re.sub('[^/]*$', '', tp.path)
+    
+    if not os.path.isfile(args.target):
+        tp = urlparse(args.target)
+        site_root = urlunparse([tp.scheme, tp.netloc] + [''] * 4)
+        target_root = site_root + re.sub('[^/]*$', '', tp.path)
+    else:
+        site_root = ''
+        target_root = ''
+    
     
     print('Opening target...', end=' ')
-    fd, ftype, finfo = open_thing(target)
+    fd, ftype, finfo = open_thing(args.target)
     if fd is None:
         sys.exit('Terminated: target unreachable.')
     if finfo is not None:
         if finfo.maintype != 'text':
             sys.exit('Terminated: cannot parse "{0}".'.format(finfo.maintype))
-        if finfo.url != target and 'login' in finfo.url:
+        if finfo.url != args.target and 'login' in finfo.url:
             sys.exit('Terminated: redirected to login page.\n' +
                 'Try to save the page from your browser and pass the file.')
     print('ok')
+    # Detect charset and decode input.
     target_charset = 'cp1251'
     if finfo is not None:
         c = finfo.getparam('charset')
         if c is not None:
             target_charset = c
     instr = fd.read().decode(target_charset)
-    
+    # Extract posts.
+    for p in PSTO_PATTERNS:
+        m = re.findall(FLAGS + p, instr)
+        if len(m) > 0:
+            m = m[:args.count]
+            break
+    outs = []
     try:
-        outstr = process(instr)
+        for i, p in enumerate(m):
+            if len(m) > 1:
+                print('Post {0}/{1}'.format(i+1, len(m)))
+            outs += [process(p)]
     except KeyboardInterrupt as ex:
         sys.exit('\nTerminated manually.')
-    
+    outstr = '\n\n'.join(outs)
     try:
         outstr = postprocess(outstr)
     except KeyboardInterrupt as ex:
         print('\nPost-processing terminated.')
     
     try:
-        open(output_file, 'w').write(outstr.encode('utf-8'))
-        print('Output written to', output_file)
+        args.output.write(outstr.encode('utf-8'))
+        print('Output written to', args.output.name)
     except IOError as ex:
         print('[!] I/O error.', ex)
         sys.exit(1)
     
-    if os.name == 'nt': os.startfile(output_file, 'open')
+    if not args.no_open and os.path.isfile(args.output.name) and os.name == 'nt':
+        os.startfile(args.output.name, 'open')
