@@ -54,7 +54,7 @@ RW_EXT = (
     ('phyrefile.com/image/view', 'id="main_content".*?href="([^"]+)'),
     ('bak.lan/pictures/share', '<input.*?class="code_box".*?value="([^"]+)'),
     ('ipicture.ru/Gallery/Viewfull/', '<input.*?type="text".*?value="([^"]+)'),
-    ('img.epidemz.net/s/', '<input.*?type="text".*?value="([^"]+)'),
+    ('epikz.net/s/', '([^"]+?epikz.net/i/[^"]+)'),
     ('10pix.ru/view/', 'src="([^"]+10pix.ru/img[^"]+)'),
     ('imageshack.us/i/', 'rel="image_src" href="([^"]+)'),
     ('imageban.ru/show/', r'id=imagecode.*?<img[^>]+src="([^"]+)'),
