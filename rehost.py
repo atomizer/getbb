@@ -173,7 +173,7 @@ def recover_image(url):
             continue
         try:
             return re.search(FLAGS + R, page.read()).group(1)
-        except IndexError, URLError:
+        except (IndexError, URLError):
             print(ERR, 'Failed to get direct URL:\n', ERR, url)
             return url
     return url
