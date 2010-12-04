@@ -58,6 +58,7 @@ RW_EXT = (
     ('10pix.ru/view/', 'src="([^"]+10pix.ru/img[^"]+)'),
     ('imageshack.us/i/', 'rel="image_src" href="([^"]+)'),
     ('imageban.ru/show/', r'id=imagecode.*?<img[^>]+src="([^"]+)'),
+    ('lostpic.net/view.php', '([^"]+?lostpic.net/images/[^"]+)')
 )
 
 IMAGE_TYPES = (
