@@ -1,12 +1,6 @@
 #!/usr/bin/python
 # 2010 atomizer
 # version 0.6
-"""
-Automatic uploader to file.kirovnet.ru.
-
-Usage:
-    $ python rehost.py [files] [URLs] ...
-"""
 
 from __future__ import print_function
 
@@ -16,6 +10,7 @@ import re
 import urllib2
 import string
 import random
+import argparse
 from urllib2 import build_opener, install_opener, urlopen, URLError
 from urlparse import urlparse
 from tempfile import TemporaryFile
@@ -31,7 +26,6 @@ UPLOAD_URL = 'http://file.kirovnet.ru/upload'
 DOWNLOAD_URL = r'http://file.kirovnet.ru/d/\d+'
 MAX_SIZE = 50 * 2 ** 20
 TIMEOUT = 60
-CACHE_FILE = os.path.join(os.path.dirname(__file__), 'linkcache.txt')
 
 ERR = '[!]'
 FLAGS = '(?si)'
@@ -66,28 +60,40 @@ IMAGE_TYPES = (
 )
 IMAGE_EXT = ('.jpg', '.tiff', '.gif', '.bmp', '.png' )
 
+cache_cfg = {}
+cache_cfg['enabled'] = True
+try:
+    cache_cfg['file'] = os.path.join(os.path.dirname(__file__), 'linkcache.txt')
+    with open(cache_cfg['file'], 'a+'):
+        pass
+except:
+    cache_cfg['enabled'] = False
+
+
 def print_urlerror(url, ex):
     msg = str(getattr(ex, 'code', ''))
     if msg: msg = 'HTTP ' + msg
     msg += str(getattr(ex, 'reason', ''))
     if not msg: msg = str(ex)
     print(ERR, 'Request to', url, 'failed:', msg)
-    
-    
+
+
 def uaopener(handler=urllib2.BaseHandler, uagent=USER_AGENT):
     """Build an opener with spoofed user-agent."""
     op = build_opener(handler)
     op.addheaders = [('User-Agent', uagent)]
     return op
-    
-    
+
+
 # Every urlopen() will use our special opener instead of default one.
 install_opener(uaopener())
 
 
 def cache_search(address):
     """Find out if object at this address is already rehosted."""
-    with open(CACHE_FILE, 'a+') as f:
+    if not cache_cfg['enabled']:
+        return None
+    with open(cache_cfg['file'], 'a+') as f:
         for cs in f:
             try:
                 sl, fl = cs.strip().split()[:2]
@@ -95,15 +101,17 @@ def cache_search(address):
                     return fl
             except ValueError:
                 pass  # bad format
-    
-    
+
+
 def cache_write(src, dl):
     """Remember the download URL for re-use."""
+    if not cache_cfg['enabled']:
+        return None
     if src != dl and not cache_search(src):
-        with open(CACHE_FILE, 'a+') as cf:
+        with open(cache_cfg['file'], 'a+') as cf:
             cf.write('{0}\t{1}\n'.format(src, dl))
-    
-    
+
+
 def open_thing(address, accept_types=None):
     """Try to open an URL or local file.
     
@@ -111,7 +119,7 @@ def open_thing(address, accept_types=None):
     -- file: file object or None if an error occured
     -- type: MIME type (if known)
     -- info: httplib.HTTPMessage object (if present)
-    """    
+    """
     f, t, i = None, None, None
     pa = urlparse(address)
     if pa.scheme in ['http', 'https', 'ftp']:
@@ -147,7 +155,7 @@ def open_thing(address, accept_types=None):
         else:
             print(ERR, 'Unknown object:', fp)
     return (f, t, i)
-    
+
 
 def recover_image(url):
     """Apply URL-rewriting rules in effort to get direct link."""
@@ -169,18 +177,13 @@ def recover_image(url):
             print(ERR, 'Failed to get direct URL:\n', ERR, url)
             return url
     return url
-    
-    
+
+
 def rehost(url, force_cache=False, image=False):
     """Take URL or file path, return download URL.
     
     If image=True, also try to retrieve direct link before rehosting.
-    
-    Usage:
-        rehost('http://my.host.org/song.mp3')
-        rehost('/home/me/doc.rst')
     """
-    
     if re.match(DOWNLOAD_URL, url):
         return url  # already there
     cl = cache_search(url)
@@ -193,7 +196,6 @@ def rehost(url, force_cache=False, image=False):
     else:
         s = url
         ts = None
-        
     fd, ftype, finfo = open_thing(s, accept_types=ts)
     if fd is None:
         return url  # failed to open or wrong type
@@ -214,7 +216,6 @@ def rehost(url, force_cache=False, image=False):
         print(ERR, 'Too big object:', s)
         return url
     datagen, headers = multipart_encode([pf])
-    
     req = urllib2.Request(UPLOAD_URL, datagen, headers)
     try:
         pd = streaming_opener().open(req, timeout=TIMEOUT)
@@ -222,7 +223,7 @@ def rehost(url, force_cache=False, image=False):
     except URLError as ex:
         print_urlerror(UPLOAD_URL, ex)
         return url
-        
+    
     g = re.search(FLAGS + DOWNLOAD_URL, page)
     if g:
         g = g.group(0)
@@ -235,18 +236,43 @@ def rehost(url, force_cache=False, image=False):
             print(ERR, 'Failed to get URL (layout changed?)')
         return url    # falling back
     
-    if force_cache or finfo is not None:
+    if finfo is not None:
         cache_write(url, g)
+    elif force_cache:
+        cache_write(os.path.realpath(url), g)
     return g
-    
+
+
 if __name__ == '__main__':
-    # TODO: show GUI here
-    
-    if sys.argv[1:]:
-        for arg in sys.argv[1:]:
-            t = rehost(arg)
-            print(t)  # something better would be cool.
-        if os.name == 'nt':
-            sys.stdin.readline()
-    else:
-        print(__doc__)
+    p = argparse.ArgumentParser(
+        description='Automatic uploader to file.kirovnet.ru',
+        epilog='Latest version and more info at https://github.com/atomizer/getbb'
+    )
+    p.add_argument(
+        'targets', metavar='target', nargs='+',
+        help='local file or URL to be uploaded'
+    )
+    p.add_argument(
+        '-o', dest='output', default=sys.stdout, type=argparse.FileType('w'),
+        help='write output to file (default: stdout)'
+    )
+    p.add_argument(
+        '-i', '--image', action='store_true',
+        help='treat targets as images (try to get direct URL)'
+    )
+    p.add_argument(
+        '-nc', '--no-cache', dest='use_cache', action='store_false',
+        help='don\'t use URL cache at all'
+    )
+    p.add_argument(
+        '-fc', '--force-cache', action='store_true',
+        help='force caching (default: cache only non-local)'
+    )
+    a = p.parse_args()
+    cache_cfg['enabled'] = cache_cfg['enabled'] and a.use_cache
+    t = []
+    for arg in a.targets:
+        t += [rehost(arg, image=a.image, force_cache=a.force_cache)]
+    print('\n'.join(t), file=a.output)
+    if a.output == sys.stdout and os.name == 'nt':
+        sys.stdin.readline()
