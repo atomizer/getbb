@@ -154,12 +154,12 @@ def decode_html_entities(string):
             else: return match.group()
     entity_re = re.compile(r'&(#?)(x?)(\w+);')
     return entity_re.sub(substitute_entity, string)
-    
-    
+
+
 def hashurl(u):
     return sha1(u.encode('utf-8')).hexdigest()
-    
-    
+
+
 def reduce_nest(code, left, right, srcleft, srcright):
     L = '{#L#}'; R = '{#R#}'
     # Hide braces in replacements
@@ -177,8 +177,8 @@ def reduce_nest(code, left, right, srcleft, srcright):
     # Empty pairs removal
     r = (left + code + right).replace(left + right, '')
     return r
-    
-    
+
+
 def proctag(m):
     """Return a replacement for single HTML tag."""
     global urls
@@ -249,8 +249,8 @@ def proctag(m):
         return optag + dc + cltag
     # unknown tags
     return d['content']
-    
-    
+
+
 def process(s):
     global urls
     urls = {}
@@ -376,8 +376,8 @@ def postprocess(s):
     
     print('Post-processing done')
     return s
-    
-    
+
+
 if __name__ == '__main__':
     if not sys.argv[1:]:
         print(__doc__)
@@ -426,4 +426,3 @@ if __name__ == '__main__':
         sys.exit(1)
     
     if os.name == 'nt': os.startfile(output_file, 'open')
-    
