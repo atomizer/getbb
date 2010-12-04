@@ -236,10 +236,8 @@ def rehost(url, force_cache=False, image=False):
             print(ERR, 'Failed to get URL (layout changed?)')
         return url    # falling back
     
-    if finfo is not None:
+    if force_cache or finfo is not None:
         cache_write(url, g)
-    elif force_cache:
-        cache_write(os.path.realpath(url), g)
     return g
 
 
