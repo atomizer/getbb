@@ -167,8 +167,6 @@ def proctag(m):
     global urls
     d = m.groupdict()
     d['tag'] = d['tag'].lower()
-    if d['tag'] in SKIP_TAGS:
-        return ''
     for t in SKIP_TAGS_ATTR:
         if re.search(t, d['attr']):
             return ''
@@ -240,6 +238,8 @@ def process(s):
     # Cut out bad tags.
     for t in BANNED_TAGS:
         s = s.split('<' + t)[0]
+    for t in SKIP_TAGS:
+        s = re.sub(FLAGS + '\s*<(?P<tag>' + t + ').*?</(?P=tag)>\s*', '', s)
     # Apply simple rules.
     for (k, r) in SIMPLE_RULES:
         s = re.sub(FLAGS + k, r, s)
