@@ -38,6 +38,7 @@ PSTO_PATTERNS = (
     'class="post_body"[^>]*>(.*?)</div><!--/post_body',  # rutracker-alike
     'class="heading_b"[^>]*>(.*?)<a name="startcomments"',  # hdclub
     'id="news-id-[^>]*>(.*?)<br>',  # epidemz
+    'id=\'news-id-[^>]*>(.*?)<td class="j"', # very secret site
 )
 SIMPLE_RULES = (
     ('\n', ''), ('\r', ''), ('<wbr>', ''), ('<!--.*?-->', ''),
@@ -47,10 +48,11 @@ SIMPLE_RULES = (
     ('<hr[^>]*>', '[hr]'),
     ('<br[^>]*>', '\n'),
     ('<div></div>', '\n'),
+    ('<tr[^>]*>', ''), ('</tr>', '\n'),
     # lists
-    ('<[ou]l>', '[list]'), ('</[ou]l>', '[/list]'),
+    ('<[ou]l[^>]*>', '[list]'), ('</[ou]l>', '[/list]'),
     ('<[ou]l type="([^"])">', '[list=\\1]'),
-    ('<li>', '[*]'),  ('</li>', ''),
+    ('<li[^>]*>', '[*]'),  ('</li>', ''),
     # hdclub & epidemz dumb tags
     ('<b>', '[b]'), ('</b>', '[/b]'),
     ('<i>', '[i]'), ('</i>', '[/i]'),
@@ -170,8 +172,15 @@ def proctag(m):
     for t in SKIP_TAGS_ATTR:
         if re.search(t, d['attr']):
             return ''
-            
     dc = d['content']
+    
+    # very secret site, fucked up
+    if 'dvdtalk.ru' in site_root:
+        if 'class="z"' in d['attr'] or 'width="190"' in d['attr']:
+            dc = dc.replace('\n', ' ')
+        if d['tag'] == 'span':
+            return '[b]' + dc + '[/b]'
+    
     for (i,v) in COMPLEX_RULES:
         dm = re.search(FLAGS + i, d['attr'])
         if dm is None:
@@ -229,7 +238,7 @@ def proctag(m):
             return reduce_nest(dc, optag, cltag, v[0], v[1])
         return optag + dc + cltag
     # unknown tags
-    return d['content']
+    return dc
 
 
 def process(s):
