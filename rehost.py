@@ -38,7 +38,7 @@ RW = (
         r'i\1.fastpic.ru/big/\2/\3/\5/\4\5.\6', 0),
     # http://www.bitbest.ru/view.php?img=2010_10_20_1254978563.jpg
     # http://www.bitbest.ru/files/2010_10_20_1254978563.jpg
-    (r'bitbest\.ru/view\.php\?.*?img=([^&]+).*', r'bitbest.ru/files/\1', 0),
+    (r'bitbest\.ru/view\.php\?.*?img=([^&]+).*', r'bitbest.ru/i/\1', 0),
     # http://img.phyrefile.com/hdlover/2009/12/09/7_002.png
     # http://pic.phyrefile.com/h/hd/hdlover/2009/12/09/7_002.png
     (   r'img\.phyrefile\.com/((\w)(\w)\w*)/(.*)',
