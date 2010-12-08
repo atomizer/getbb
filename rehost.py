@@ -163,8 +163,12 @@ def recover_image(url):
     """Apply URL-rewriting rules in effort to get direct link."""
     for (L, R, C) in RW:
         dlink = re.sub(L, R, url)
-        if dlink != url and C == 0:
-            return dlink
+        if dlink != url:
+            if C == 0:
+                return dlink
+            else:  # continue rewriting
+                url = dlink
+                break
     try:
         page = urlopen(url)
     except URLError as ex:
@@ -175,8 +179,8 @@ def recover_image(url):
             continue
         try:
             return re.search(FLAGS + R, page.read()).group(1)
-        except (IndexError, URLError):
-            print(ERR, 'Failed to get direct URL:\n', ERR, url)
+        except (AttributeError, IndexError, URLError):
+            print(ERR, 'Failed to get direct URL:', url)
             return url
     return url
 
