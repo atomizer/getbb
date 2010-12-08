@@ -31,28 +31,30 @@ ERR = '[!]'
 FLAGS = '(?si)'
 
 RW = (
-    (r'radikal.ru/\w/(.+)\.html?$', r'\1'),
+    (r'radikal\.ru/\w/(.+)\.html?$', r'\1', 0),
     # http://fastpic.ru/view/7/2010/0616/5439056de5527a6dc085ff9ffd186715.jpg.html
     # http://i7.fastpic.ru/big/2010/0616/15/5439056de5527a6dc085ff9ffd186715.jpg
-    (   r'fastpic.ru/view/(\d+)/(\d+)/(\d+)/([^\.]+?)(\w\w).([^\.]+).html?$',
-        r'i\1.fastpic.ru/big/\2/\3/\5/\4\5.\6'),
+    (   r'fastpic\.ru/view/(\d+)/(\d+)/(\d+)/([^\.]+?)(\w\w)\.([^\.]+)\.html?$',
+        r'i\1.fastpic.ru/big/\2/\3/\5/\4\5.\6', 0),
     # http://www.bitbest.ru/view.php?img=2010_10_20_1254978563.jpg
     # http://www.bitbest.ru/files/2010_10_20_1254978563.jpg
-    (r'bitbest.ru/view.php\?.*?img=([^&]+).*', r'bitbest.ru/files/\1'),
+    (r'bitbest\.ru/view\.php\?.*?img=([^&]+).*', r'bitbest.ru/files/\1', 0),
     # http://img.phyrefile.com/hdlover/2009/12/09/7_002.png
     # http://pic.phyrefile.com/h/hd/hdlover/2009/12/09/7_002.png
-    (   r'img.phyrefile.com/((\w)(\w)\w*)/(.*)',
-        r'pic.phyrefile.com/\2/\2\3/\1/\4'),
+    (   r'img\.phyrefile\.com/((\w)(\w)\w*)/(.*)',
+        r'pic.phyrefile.com/\2/\2\3/\1/\4', 0),
+    (r'.*?(http://(?:www\.)?ag\.ru/screenshots/\w+/\d+).*', r'\1/big', 1),
 )
 RW_EXT = (
-    ('phyrefile.com/image/view', 'id="main_content".*?href="([^"]+)'),
-    ('bak.lan/pictures/share', '<input.*?class="code_box".*?value="([^"]+)'),
-    ('ipicture.ru/Gallery/Viewfull/', '<input.*?type="text".*?value="([^"]+)'),
-    ('epikz.net/s/', '([^"]+?epikz.net/i/[^"]+)'),
-    ('10pix.ru/view/', 'src="([^"]+10pix.ru/img[^"]+)'),
-    ('imageshack.us/i/', 'rel="image_src" href="([^"]+)'),
-    ('imageban.ru/show/', r'id=imagecode.*?<img[^>]+src="([^"]+)'),
-    ('lostpic.net/view.php', '([^"]+?lostpic.net/images/[^"]+)')
+    ('phyrefile\.com/image/view', 'id="main_content".*?href="([^"]+)'),
+    ('bak\.lan/pictures/share', '<input.*?class="code_box".*?value="([^"]+)'),
+    ('ipicture\.ru/Gallery/Viewfull/', '<input.*?type="text".*?value="([^"]+)'),
+    ('epikz\.net/s/', '([^"]+?epikz.net/i/[^"]+)'),
+    ('10pix\.ru/view/', 'src="([^"]+10pix.ru/img[^"]+)'),
+    ('imageshack\.us/i/', 'rel="image_src" href="([^"]+)'),
+    ('imageban\.ru/show/', r'id=imagecode.*?<img[^>]+src="([^"]+)'),
+    ('lostpic\.net/view\.php', '([^"]+?lostpic.net/images/[^"]+)'),
+    ('ag\.ru/screenshots/', r'href="([^"]+?screenshots.ag.ru/[^"]+)'),
 )
 
 IMAGE_TYPES = (
@@ -159,9 +161,9 @@ def open_thing(address, accept_types=None):
 
 def recover_image(url):
     """Apply URL-rewriting rules in effort to get direct link."""
-    for (L, R) in RW:
+    for (L, R, C) in RW:
         dlink = re.sub(L, R, url)
-        if dlink != url:
+        if dlink != url and C == 0:
             return dlink
     try:
         page = urlopen(url)
