@@ -49,12 +49,13 @@ RW_EXT = (
     ('phyrefile\.com/image/view', 'id="main_content".*?href="([^"]+)'),
     ('bak\.lan/pictures/share', '<input.*?class="code_box".*?value="([^"]+)'),
     ('ipicture\.ru/Gallery/Viewfull/', '<input.*?type="text".*?value="([^"]+)'),
-    ('epikz\.net/s/', '([^"]+?epikz.net/i/[^"]+)'),
-    ('10pix\.ru/view/', 'src="([^"]+10pix.ru/img[^"]+)'),
+    ('epikz\.net/s/', r'([^"]+?epikz\.net/i/[^"]+)'),
+    ('10pix\.ru/view/', r'src="([^"]+10pix\.ru/img[^"]+)'),
     ('imageshack\.us/i/', 'rel="image_src" href="([^"]+)'),
     ('imageban\.ru/show/', r'id=imagecode.*?<img[^>]+src="([^"]+)'),
-    ('lostpic\.net/view\.php', '([^"]+?lostpic.net/images/[^"]+)'),
-    ('ag\.ru/screenshots/', r'href="([^"]+?screenshots.ag.ru/[^"]+)'),
+    ('lostpic\.net/view\.php', r'([^"]+?lostpic\.net/images/[^"]+)'),
+    ('ag\.ru/screenshots/', r'href="([^"]+?screenshots\.ag\.ru/[^"]+)'),
+    ('xmages\.net/show', r'([^"]+?xmages\.net/storage/[^"]+)'),
 )
 
 IMAGE_TYPES = (
