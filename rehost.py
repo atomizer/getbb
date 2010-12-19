@@ -44,6 +44,9 @@ RW = (
     (   r'img\.phyrefile\.com/((\w)(\w)\w*)/(.*)',
         r'pic.phyrefile.com/\2/\2\3/\1/\4', 0),
     (r'.*?(http://(?:www\.)?ag\.ru/screenshots/\w+/\d+).*', r'\1/big', 1),
+    # http://iceimg.com/0997a2a5e67e61.png.htm
+    # http://iceimg.com/i/09/97/a2a5e67e61.png
+    (r'(iceimg\.com)/(\w\w)(\w\w)(.+).html?$', r'\1/i/\2/\3/\4', 0),
 )
 RW_EXT = (
     ('phyrefile\.com/image/view', 'id="main_content".*?href="([^"]+)'),
