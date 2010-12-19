@@ -55,7 +55,7 @@ RW_EXT = (
     ('imageban\.ru/show/', r'id=imagecode.*?<img[^>]+src="([^"]+)'),
     ('lostpic\.net/view\.php', r'([^"]+?lostpic\.net/images/[^"]+)'),
     ('ag\.ru/screenshots/', r'href="([^"]+?screenshots\.ag\.ru/[^"]+)'),
-    ('xmages\.net/show', r'([^"]+?xmages\.net/storage/[^"]+)'),
+    ('xmages\.net/show', r'src="([^"]+?xmages\.net/storage/[^"]+)'),
 )
 
 IMAGE_TYPES = (
