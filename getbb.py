@@ -41,7 +41,7 @@ PSTO_PATTERNS = (
     'id=\'news-id-[^>]*>(.*?)<td class="j"', # very secret site
 )
 SIMPLE_RULES = (
-    ('\n', ''), ('\r', ''), ('<wbr>', ''), ('<!--.*?-->', ''),
+    ('\n', ''), ('\r', ''), ('<wbr>', ''), (r'<!(\s*--.*?--\s*)*>', ''),
     # line breaks, horisontal rulers
     ('<span class="post-br">.*?</span>', '\n\n'),
     ('<span class="post-hr">.*?</span>', '[hr]'),
@@ -103,8 +103,9 @@ SKIP_TAGS = (
     'script', 'style', 'head', 'p',
 )
 SKIP_TAGS_ATTR = (
-    'display: none', '"heading"', 'colhead',
+    'display: ?none', '"heading"', 'colhead',
     'sp-fold', 'q-head', 'c-head', 'sp-title', 'quote-title',
+    'attach', 'thx-container', 'tor-fl-wrap',
 )
 TAGS_WITH_URLS = ('a', 'var', 'img',)
 # no nesting allowed ([b][b]test[/b][/b] -> [b]test[/b])
