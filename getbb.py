@@ -23,6 +23,11 @@ try:
 except ImportError:
     Image = None
 
+try:
+    import chardet
+except ImportError:
+    chardet = None
+
 import rehost as rehost_m
 from rehost import *
 
@@ -382,6 +387,10 @@ if __name__ == '__main__':
         help='parse N consecutive posts (default: 1)'
     )
     p.add_argument(
+        '-C', dest='charset', type=str, default='',
+        help='set input charset (default: auto-detect)'
+    )
+    p.add_argument(
         '-nr', '--no-rehost', action='store_true',
         help='leave URLs as-is'
     )
@@ -416,13 +425,18 @@ if __name__ == '__main__':
             sys.exit('Terminated: redirected to login page.\n' +
                 'Try to save the page from your browser and pass the file.')
     print('ok')
+    inbytes = fd.read()
     # Detect charset and decode input.
-    target_charset = 'cp1251'
+    target_charset = args.charset
     if finfo is not None:
-        c = finfo.getparam('charset')
-        if c is not None:
-            target_charset = c
-    instr = fd.read().decode(target_charset)
+        target_charset = finfo.getparam('charset')
+    if not target_charset:
+        if chardet is not None:
+            target_charset = chardet.detect(inbytes)['encoding']
+        else:
+            target_charset = 'cp1251'
+    print('Using charset "{0}"'.format(target_charset))
+    instr = inbytes.decode(target_charset)
     # Extract posts.
     for p in PSTO_PATTERNS:
         m = re.findall(FLAGS + p, instr)
