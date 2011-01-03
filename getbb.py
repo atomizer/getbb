@@ -428,15 +428,24 @@ if __name__ == '__main__':
     inbytes = fd.read()
     # Detect charset and decode input.
     target_charset = args.charset
-    if finfo is not None:
+    instr = ''
+    if not target_charset and finfo is not None:
         target_charset = finfo.getparam('charset')
     if not target_charset:
         if chardet is not None:
             target_charset = chardet.detect(inbytes)['encoding']
         else:
             target_charset = 'cp1251'
-    print('Using charset "{0}"'.format(target_charset))
-    instr = inbytes.decode(target_charset)
+    for c in [target_charset] + [x for x in ['cp1251', 'utf-8'] if x != target_charset]:
+        print('decoding as {0}...'.format(c), end=' ')
+        try:
+            instr = inbytes.decode(c)
+            print('ok')
+            break
+        except:
+            print('failed')
+    if not instr:
+        sys.exit('Terminated: nothing to parse.')
     # Extract posts.
     for p in PSTO_PATTERNS:
         m = re.findall(FLAGS + p, instr)
