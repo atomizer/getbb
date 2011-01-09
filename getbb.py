@@ -102,7 +102,6 @@ COMPLEX_RULES = (
     ('post-pre', ('[font="monospace"]','[/font]')),
 )
 
-BANNED_TAGS = ('fieldset',)
 SKIP_TAGS = (
     'object', 'param', 'embed', 'form',
     'script', 'style', 'head', 'p',
@@ -251,8 +250,6 @@ def process(s):
     global urls
     urls = {}
     # Cut out bad tags.
-    for t in BANNED_TAGS:
-        s = s.split('<' + t)[0]
     for t in SKIP_TAGS:
         s = re.sub(FLAGS + '\s*<(?P<tag>' + t + ').*?</(?P=tag)>\s*', '', s)
     # Apply simple rules.
