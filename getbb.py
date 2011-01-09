@@ -377,7 +377,7 @@ if __name__ == '__main__':
     )
     p.add_argument(
         '-o', dest='output',
-        default=os.path.join(os.path.dirname(__file__), 'out.txt'),
+        default=os.path.join(os.path.abspath(os.path.dirname(__file__)), 'out.txt'),
         type=argparse.FileType('w'),
         help='write output to file (default: %(default)s)'
     )
