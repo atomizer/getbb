@@ -102,9 +102,9 @@ COMPLEX_RULES = (
     ('post-pre', ('[font="monospace"]','[/font]')),
 )
 
-BANNED_TAGS = ('fieldset', 'form',)
+BANNED_TAGS = ('fieldset',)
 SKIP_TAGS = (
-    'object', 'param', 'embed',
+    'object', 'param', 'embed', 'form',
     'script', 'style', 'head', 'p',
 )
 SKIP_TAGS_ATTR = (
