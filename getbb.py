@@ -379,7 +379,9 @@ if __name__ == '__main__':
         'target', help='local file or URL to be parsed'
     )
     p.add_argument(
-        '-o', dest='output', default='out.txt', type=argparse.FileType('w'),
+        '-o', dest='output',
+        default=os.path.join(os.path.dirname(__file__), 'out.txt'),
+        type=argparse.FileType('w'),
         help='write output to file (default: %(default)s)'
     )
     p.add_argument(
