@@ -21,7 +21,7 @@ except ImportError:
         bits = random.getrandbits(160)
         return sha.new(str(bits)).hexdigest()
 
-import urllib, re, os, mimetypes
+import urllib, re, os, sys, mimetypes
 
 def encode_and_quote(data):
     """If ``data`` is unicode, return urllib.quote_plus(data.encode("utf-8"))
@@ -81,12 +81,8 @@ class MultipartParam(object):
         if filename is None:
             self.filename = None
         else:
-            if isinstance(filename, unicode):
-                # Encode with XML entities
-                self.filename = filename.encode("ascii", "xmlcharrefreplace")
-            else:
-                self.filename = str(filename)
-            self.filename = self.filename.replace('"', r'\"')
+            self.filename = filename.decode(sys.getfilesystemencoding())\
+                .encode("utf-8").replace('"', r'\"')
         self.filetype = _strify(filetype)
 
         self.filesize = filesize
