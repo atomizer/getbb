@@ -204,6 +204,9 @@ def proctag(m):
         if optag == '{#FLOAT#}':
             dc = re.sub(r'\[img\]', '[img=' + g + ']', dc)
             optag = ''
+        # ban comic sans
+        if cltag == '[/font]' and g == "'Comic Sans MS'":
+            return dc
         
         optag = optag.replace('_', g)
         if v[0] == '[img=_]': g = dm.groups('')[1]
