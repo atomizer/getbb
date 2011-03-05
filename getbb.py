@@ -207,6 +207,9 @@ def proctag(m):
         # ban comic sans
         if cltag == '[/font]' and g == "'Comic Sans MS'":
             return dc
+        # align=left is pointless
+        if cltag == '[/align]' and g == 'left':
+            return dc
         
         optag = optag.replace('_', g)
         if v[0] == '[img=_]': g = dm.groups('')[1]
