@@ -21,7 +21,7 @@ from streaminghttp import streaming_opener
 
 __all__ = ['rehost', 'open_thing', 'print_urlerror', 'DOWNLOAD_URL']
 
-USER_AGENT = 'Mozilla/5.0 Firefox/3.6.12'
+USER_AGENT = ''
 UPLOAD_URL = 'http://file.kirovnet.ru/upload'
 DOWNLOAD_URL = r'http://file.kirovnet.ru/d/\d+'
 MAX_SIZE = 50 * 2 ** 20
