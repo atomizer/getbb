@@ -454,6 +454,11 @@ if __name__ == '__main__':
         if len(m) > 0:
             m = m[:args.count]
             break
+    if len(m) == 0:
+        print('\n[!] Warning: no pattern for this page detected - parsing whole page!' +
+            '\n[!] You may want to ask the author for new pattern' +
+            ' to reduce amount of shit in the output.\n')
+        m = [instr]
     outs = []
     try:
         for i, p in enumerate(m):
