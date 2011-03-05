@@ -41,7 +41,7 @@ ptag_re = re.compile(FLAGS +
 
 PSTO_PATTERNS = (
     'class="post_body"[^>]*>(.*?)</div><!--/post_body',  # rutracker-alike
-    'class="heading_b"[^>]*>(.*?)<a name="startcomments"',  # hdclub
+    '>[0-9a-f]{40}</td></tr>(.*?)</table>',  # hdclub-alike
     'id="news-id-[^>]*>(.*?)<br>',  # epidemz
     'id=\'news-id-[^>]*>(.*?)<td class="j"', # very secret site
 )
