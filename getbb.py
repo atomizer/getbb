@@ -312,7 +312,7 @@ def postprocess(s):
     print('Post-processing...')
     
     # Poster fix: make the poster float to the right
-    if any([x in site_root for x in ('epidemz', 'hdclub')]):
+    if any([x in site_root for x in ('epidemz', 'hdclub')]) or s[:5] == '[img]':
         s = re.sub(r'\[img[^]]*\]', r'[img=right]', s, 1)
         print('-- poster fix applied')
     
