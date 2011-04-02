@@ -255,6 +255,10 @@ def proctag(m):
 def process(s):
     global urls
     urls = {}
+    # Hackity hack.
+    s = s.split('class="attach')[0].split('<')
+    s.pop()
+    s = '<'.join(s)
     # Cut out bad tags.
     for t in SKIP_TAGS:
         s = re.sub(FLAGS + '\s*<(?P<tag>' + t + ').*?</(?P=tag)>\s*', '', s)
