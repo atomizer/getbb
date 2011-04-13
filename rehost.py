@@ -189,7 +189,7 @@ def recover_image(url):
     return url
 
 
-def rehost(url, force_cache=False, image=False):
+def rehost(url, force_cache=False, image=False, referer=''):
     """Take URL or file path, return download URL.
     
     If image=True, also try to retrieve direct link before rehosting.
@@ -206,6 +206,12 @@ def rehost(url, force_cache=False, image=False):
     else:
         s = url
         ts = None
+    
+    if referer:
+        op = uaopener()
+        op.addheaders += [('Referer', referer)]
+        install_opener(op)
+    
     fd, ftype, finfo = open_thing(s, accept_types=ts)
     if fd is None:
         return url  # failed to open or wrong type

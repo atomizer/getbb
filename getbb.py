@@ -295,12 +295,12 @@ def process(s):
                     print_urls(url, g.value)
                 return f
             for h, url in urls.iteritems():
-                j = pool.spawn(rehost, url, image=True)
+                j = pool.spawn(rehost, url, image=True, referer=target_root)
                 j.link_value(fin(h, url))
             pool.join()
         else:
             for h, url in urls.iteritems():
-                new_url = rehost(url, image=True)
+                new_url = rehost(url, image=True, referer=target_root)
                 urls[h] = new_url
                 print_urls(url, new_url)
     # Bring URLs back in places.
