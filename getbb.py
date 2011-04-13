@@ -41,7 +41,7 @@ ptag_re = re.compile(FLAGS +
 
 PSTO_PATTERNS = (
     'class="post_body"[^>]*>(.*?)</div><!--/post_body',  # rutracker-alike
-    '>[0-9a-f]{40}</td></tr>(.*?)</table>',  # hdclub-alike
+    '>[0-9a-f]{40}</td></tr>(.*?)<a name="startcomments">',  # hdclub-alike
     'id="news-id-[^>]*>(.*?)<br>',  # epidemz
     'id=\'news-id-[^>]*>(.*?)<td class="j"', # very secret site
 )
@@ -78,9 +78,9 @@ COMPLEX_RULES = (
     ('font-size: ?(\d+)', ('[size=_]',  '[/size]')),
     ('font-family: ?([^;"]+)', ('[font="_"]','[/font]')),
     # URLs
-    ('href="([^"]+)', ('[url=_]','[/url]')),
+    ('href=[\'"]([^\'"]+)', ('[url=_]','[/url]')),
     # images
-    ('src="([^"]+)', ('[img]','[/img]')),
+    ('src=[\'"]([^\'"]+)', ('[img]','[/img]')),
     ('class="postImg" title="([^"]+)', ('[img]','[/img]')),
     ('class="postImg [^"]*?img-([^ "]*)[^>]*?title="([^"]+)',
         ('[img=_]','[/img]')),
@@ -104,7 +104,7 @@ COMPLEX_RULES = (
 
 SKIP_TAGS = (
     'object', 'param', 'embed', 'form',
-    'script', 'style', 'head', 'p', 'noindex',
+    'script', 'style', 'head', 'p', 'noindex', 'noscript',
 )
 SKIP_TAGS_ATTR = (
     'display: ?none', '"heading"', 'colhead',
