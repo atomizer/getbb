@@ -104,7 +104,7 @@ COMPLEX_RULES = (
 
 SKIP_TAGS = (
     'object', 'param', 'embed', 'form',
-    'script', 'style', 'head', 'p',
+    'script', 'style', 'head', 'p', 'noindex',
 )
 SKIP_TAGS_ATTR = (
     'display: ?none', '"heading"', 'colhead',
