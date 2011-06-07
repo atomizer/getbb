@@ -46,7 +46,10 @@ RW = (
     (r'.*?(http://(?:www\.)?ag\.ru/screenshots/\w+/\d+).*', r'\1/big', 1),
     # http://iceimg.com/0997a2a5e67e61.png.htm
     # http://iceimg.com/i/09/97/a2a5e67e61.png
-    (r'(iceimg\.com)/(\w\w)(\w\w)(.+).html?$', r'\1/i/\2/\3/\4', 0),
+    (r'(iceimg\.com)/(\w\w)(\w\w)(.+)\.htm$', r'\1/i/\2/\3/\4', 0),
+    # http://picsee.net/2011-06-02/9d0c7fbe483f.jpg.html
+    # http://picsee.net/upload/2011-06-02/9d0c7fbe483f.jpg
+    (r'(picsee\.net)/(.+)\.html$', r'\1/upload/\2', 0),
 )
 RW_EXT = (
     ('phyrefile\.com/image/view', 'id="main_content".*?href="([^"]+)'),
@@ -62,9 +65,9 @@ RW_EXT = (
 )
 
 IMAGE_TYPES = (
-'image/jpeg', 'image/tiff', 'image/gif', 'image/x-ms-bmp', 'image/png',
+'image/jpeg', 'image/jpg', 'image/gif', 'image/x-ms-bmp', 'image/png',
 )
-IMAGE_EXT = ('.jpg', '.tiff', '.gif', '.bmp', '.png' )
+IMAGE_EXT = ('.jpg', '.gif', '.bmp', '.png' )
 
 cache_cfg = {}
 cache_cfg['enabled'] = True
