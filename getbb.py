@@ -42,7 +42,7 @@ ptag_re = re.compile(FLAGS +
 PSTO_PATTERNS = (
     'class="post_body"[^>]*>(.*?)</div><!--/post_body',  # rutracker-alike
     '>[0-9a-f]{40}</td></tr>(.*?)<a name="startcomments">',  # hdclub-alike
-    'id="news-id-[^>]*>(.*?)<br>',  # epidemz
+    'id="news-id-[^>]*>(.*?)</p>',  # epidemz
     'id=\'news-id-[^>]*>(.*?)<td class="j"', # very secret site
 )
 SIMPLE_RULES = (
