@@ -64,10 +64,8 @@ RW_EXT = (
     ('xmages\.net/show', r'src="([^"]+?xmages\.net/storage/[^"]+)'),
 )
 
-IMAGE_TYPES = (
-'image/jpeg', 'image/jpg', 'image/gif', 'image/x-ms-bmp', 'image/png',
-)
-IMAGE_EXT = ('.jpg', '.gif', '.bmp', '.png' )
+IMAGE_TYPES = ('image/jpeg', 'image/jpg', 'image/gif', 'image/x-ms-bmp', 'image/png')
+IMAGE_EXT = ('.jpg', '.jpg', '.gif', '.bmp', '.png')
 
 cache_cfg = {}
 cache_cfg['enabled'] = True
@@ -137,7 +135,7 @@ def open_thing(address, accept_types=None):
         except URLError as ex:
             print_urlerror(address, ex)
             return (f, t, i)
-        except ValueError:
+        except:
             print(ERR, 'Bad URL:', address)
             return (f, t, i)
         i = tmp.info()
@@ -180,6 +178,8 @@ def recover_image(url):
         page = urlopen(url)
     except URLError as ex:
         print_urlerror(url, ex)
+        return url
+    except:
         return url
     for (L, R) in RW_EXT:
         if re.search(L, page.url) is None:
