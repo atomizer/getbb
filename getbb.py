@@ -40,7 +40,7 @@ ptag_re = re.compile(FLAGS +
     '<(?P<tag>\w+)(?P<attr>[^>]*)>(?P<content>[^<]*)</\w+>')
 
 PSTO_PATTERNS = (
-    'class="post_body"[^>]*>(.*?)</div><!--/post_body',  # rutracker-alike
+    'class="post_?body"[^>]*>(.*?)(?:</div><!--/post_body|<!-- //bt)',  # rutracker-alike
     '>[0-9a-f]{40}</td></tr>(.*?)<a name="startcomments">',  # hdclub-alike
     'class="heading_b"[^>]*>(.*?)</table>',  # hdclub
     'id="news-id-[^>]*>(.*?)</p>',  # epidemz
@@ -66,6 +66,8 @@ SIMPLE_RULES = (
     # hdclub's textarea
     ('<textarea>', '[font="monospace"]'),
     ('</textarea>', '[/font]'),
+    # center, huh
+    ('<center>', '[align=center]'), ('</center>', '[/align]'),
 )
 COMPLEX_RULES = (
     # simple text formatting
