@@ -239,8 +239,7 @@ def proctag(m):
         if optag == '{#SP#}':
             hs = re.search('{#SHS#}(.*?){#SHE#}', dc)
             if hs:
-                optag = u'[spoiler="{0}"]'.format(
-                    re.sub(r'\[[^\]]+\]', '', hs.group(1)))
+                optag = '[spoiler="' + re.sub(r'\[[^\]]+\]', '', hs.group(1)) + '"]'
                 dc = dc.replace(hs.group(0),'')
             else:
                 optag = '[spoiler]'
