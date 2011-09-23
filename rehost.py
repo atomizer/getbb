@@ -59,7 +59,7 @@ RW_EXT = (
     ('10pix\.ru/view/', r'src="([^"]+10pix\.ru/img[^"]+)'),
     ('imageshack\.us/(?:i/|photo/)', 'rel="image_src" href="([^"]+)'),
     ('imageban\.ru/show/', r'id=imagecode.*?<img[^>]+src="([^"]+)'),
-    ('lostpic\.net/\?view', r'([^"]+?lostpic\.net/images/[^"]+)'),
+    ('lostpic\.net/\?', r'([^"]+?lostpic\.net/images/[^"]+)'),
     ('ag\.ru/screenshots/', r'href="([^"]+?screenshots\.ag\.ru/[^"]+)'),
     ('xmages\.net/show', r'src="([^"]+?xmages\.net/storage/[^"]+)'),
     ('directupload\.net/file', r'src="([^"]+?directupload.net/images/[^"]+)'),
