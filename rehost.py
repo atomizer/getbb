@@ -21,7 +21,7 @@ from streaminghttp import streaming_opener
 
 __all__ = ['rehost', 'open_thing', 'print_urlerror', 'DOWNLOAD_URL']
 
-USER_AGENT = ''
+USER_AGENT = 'Mozilla/5.0 (compatible)'
 UPLOAD_URL = 'http://file.kirovnet.ru/upload'
 DOWNLOAD_URL = r'http://file.kirovnet.ru/d/\d+'
 MAX_SIZE = 50 * 2 ** 20
@@ -186,9 +186,10 @@ def recover_image(url):
         if re.search(L, page.url) is None:
             continue
         try:
-            return re.search(FLAGS + R, page.read()).group(1)
-        except (AttributeError, IndexError, URLError):
-            print(ERR, 'Failed to get direct URL:', url)
+            p = page.read()
+            return re.search(FLAGS + R, p).group(1)
+        except (AttributeError, IndexError, URLError) as e:
+            print(ERR, 'Failed to get direct URL:', page.url)
             return url
     return url
 

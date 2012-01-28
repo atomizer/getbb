@@ -48,6 +48,7 @@ PSTO_PATTERNS = (
 )
 SIMPLE_RULES = (
     ('\n', ''), ('\r', ''), ('<wbr>', ''), (r'<!(\s*--.*?--\s*)*>', ''),
+    ('</?noindex>', ''),
     # line breaks, horisontal rulers
     ('<span class="post-br">.*?</span>', '\n\n'),
     ('<span class="post-hr">.*?</span>', '[hr]'),
@@ -107,7 +108,7 @@ COMPLEX_RULES = (
 
 SKIP_TAGS = (
     'object', 'param', 'embed', 'form',
-    'script', 'style', 'head', 'p', 'noindex', 'noscript',
+    'script', 'style', 'head', 'p', 'noscript',
 )
 SKIP_TAGS_ATTR = (
     'display: ?none', '"heading"', 'colhead',
